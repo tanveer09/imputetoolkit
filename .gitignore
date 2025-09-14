@@ -18,7 +18,6 @@
 *.RDataTmp
 .vignettes/*
 inst/doc
-doc/
 Meta/
 man/*.pdf
 
@@ -28,7 +27,6 @@ coverage.*
 covr/
 
 # pkgdown website
-docs/
 pkgdown/
 
 # Temporary files
