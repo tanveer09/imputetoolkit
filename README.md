@@ -1,6 +1,11 @@
 # imputetoolkit
 
-An R package for evaluating the quality of data imputation methods. This package implements an **object-oriented S3 interface** around an `evaluator` class that computes multiple metrics comparing imputed values with ground truth data.
+*Evaluate and compare multiple imputation methods with **consistent metrics** and an **intuitive S3 interface**.*
+
+`imputetoolkit` is an R package for evaluating the quality of data imputation methods.\
+This package implements an **object-oriented S3 interface** around an `evaluator` class that computes multiple metrics comparing imputed values with ground truth data.\
+It is designed to help researchers and practitioners benchmark different imputation strategies side-by-side, providing both per-column and global metrics such as RMSE, MAE, R², correlation recovery, KS statistic, and accuracy.\
+By wrapping results in an `evaluator` object, the package offers a consistent, user-friendly interface with familiar methods like `print()` and `summary()`.
 
 ------------------------------------------------------------------------
 
@@ -25,6 +30,30 @@ The **evaluator** function is a strong candidate for Object-Oriented programming
     -   R6 or Reference Classes could also be used, but for statistical models in R, **S3 classes are lightweight, idiomatic, and align with existing practices**.
 
 Overall, the evaluator is a **good candidate for OO programming** because it bundles rich, structured outputs into an intuitive object, provides a user-friendly interface, and remains extensible for future enhancements.
+
+------------------------------------------------------------------------
+
+## Objects and Methods
+
+-   **`evaluator()`**\
+    Constructor that creates an object of class `"evaluator"`.\
+    Takes two named lists of numeric vectors (`true_data`, `imputed_data`) and a method name.
+
+-   **S3 Methods**
+
+    -   `print.evaluator(x)` – displays global evaluation metrics for an imputation method.
+    -   `summary.evaluator(x)` – returns a `data.frame` with per-column metrics and global averages.
+
+-   **Metrics Computed** For each column:
+
+    -   Root Mean Squared Error (RMSE)
+    -   Mean Absolute Error (MAE)
+    -   R² (coefficient of determination)
+    -   Correlation recovery
+    -   Kolmogorov–Smirnov statistic (distribution similarity)
+    -   Accuracy (proportion of masked values correctly recovered)
+
+    These are also aggregated into **global values** stored in the `evaluator` object.
 
 ------------------------------------------------------------------------
 
@@ -63,12 +92,29 @@ print(result)
 summary(result)
 ```
 
-The evaluator object stores per-column and global metrics such as:
+## Output (example)
 
--   **RMSE** (Root Mean Squared Error)
--   **MAE** (Mean Absolute Error)
--   **R²** (coefficient of determination)
--   **Accuracy** of masked values
+```         
+Evaluation for method: mean
+Global Metrics:
+  RMSE       : 1.2909
+  MAE        : 1.0000
+  R^2        : 0.9456
+  Correlation: 0.9827
+  KS         : 0.2000
+  Accuracy   : 0.5000
+
+Per-column metrics available in result$metrics
+```
+
+------------------------------------------------------------------------
+
+## Workflow
+
+1.  **Perform** multiple imputations on your dataset (mean, median, kNN, MICE, etc.).
+2.  **Call** `evaluator(true_data, imputed_data, method)` for each method.
+3.  **Collect** results into a list and compare across methods.
+4.  **Use** `print()` for quick checks and `summary()` for detailed per-column analysis.
 
 ------------------------------------------------------------------------
 
@@ -82,9 +128,10 @@ devtools::test()
 
 These tests check that:
 
--   Objects of class `"evaluator"` are created correctly
--   Metrics are computed accurately for numeric data
--   Errors are raised for invalid inputs (e.g., mismatched keys, NA/Inf values)
+-   Objects of class `"evaluator"` are created correctly.
+-   Metrics are computed accurately for numeric data.
+-   Errors are raised for invalid inputs (e.g., mismatched keys, NA/Inf values).
+-   S3 methods (print, summary) return expected outputs.
 
 ------------------------------------------------------------------------
 
@@ -108,6 +155,8 @@ Help pages are available for all major functions:
 
 ## LLM Disclosure
 
-Some parts of this package — including **documentation drafting, README preparation, and sections of the R/C++ code (e.g., error handling and function scaffolding)**, were assisted by **ChatGPT (OpenAI)**.  
+Some parts of this package — including **documentation drafting, README preparation, and sections of the R/C++ code (e.g., error handling and function scaffolding)**, were assisted by **ChatGPT (OpenAI)**.
 
 All generated content was **reviewed, debugged, and adapted** before inclusion in the final submission.
+
+
