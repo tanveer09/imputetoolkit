@@ -3,5 +3,5 @@
 S3method(print,evaluator)
 S3method(summary,evaluator)
 export(evaluator)
-importFrom(Rcpp,sourceCpp)
+importFrom(Rcpp,evalCpp)
 useDynLib(imputetoolkit, .registration = TRUE)

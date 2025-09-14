@@ -1,3 +1,3 @@
 #' @useDynLib imputetoolkit, .registration = TRUE
-#' @importFrom Rcpp evaluator
+#' @importFrom Rcpp evalCpp
 NULL
