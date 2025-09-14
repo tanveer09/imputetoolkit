@@ -1,7 +1,67 @@
+# R package build artifacts
 .Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+
+# R package build output
+*.Rcheck/
+.Rcheck/
+
+# RStudio files
+.Rproj.user/
+#*.Rproj
+
+# Build and documentation outputs
+*.tar.gz
+*.RDataTmp
+.vignettes/*
 inst/doc
-/doc/
-/Meta/
-.DS_Store
+doc/
+Meta/
+man/*.pdf
+
+# Coverage and testing
+.Rcoverage
+coverage.*
+covr/
+
+# pkgdown website
+docs/
+pkgdown/
+
+# Temporary files
 *.o
 *.so
+*.dll
+*.dylib
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+__MACOSX/
+
+# Compiled code from src/
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+
+# Generated files from vignettes
+#vignettes/*.html
+#vignettes/*.pdf
+#vignettes/*.R
+
+# Testthat snapshots
+tests/testthat/_snaps/
+
+# Rcpp-generated files
+src/*.cpp.o
+src/*.o.d
+
+# Misc
+*.swp
+*.log

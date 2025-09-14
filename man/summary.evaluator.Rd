@@ -2,7 +2,7 @@
 % Please edit documentation in R/imputer.R
 \name{summary.evaluator}
 \alias{summary.evaluator}
-\title{Summary method for evaluator objects}
+\title{summary.evaluator}
 \usage{
 \method{summary}{evaluator}(object, ...)
 }

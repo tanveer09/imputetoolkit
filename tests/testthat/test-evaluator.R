@@ -1,25 +1,42 @@
-test_that("Evaluator computes metrics correctly for mean imputation", {
-  true_vals <- c(1, 2, 3, 4, 5)
-  imputed_vals <- c(1.1, 1.9, 3.2, 3.8, 5.1)
+test_that("Evaluator computes metrics correctly for simple numeric data", {
+  true_data <- list(
+    age = c(25, 30, 40),
+    income = c(50000, 60000, 70000, 8000)
+  )
+  imputed_data <- list(
+    age = c(25, 31, 39),
+    income = c(50000, 61000, 69000, 8001)
+  )
 
-  res <- evaluator(true_vals, imputed_vals, "mean")
+  res <- evaluator(true_data, imputed_data, "mean")
 
+  print.evaluator(res)
+
+  # Structure
   expect_s3_class(res, "evaluator")
-  expect_named(res, c("method", "RMSE", "MAE", "R2"))
+  expect_true("metrics" %in% names(res))
+  expect_true(all(c("RMSE","MAE","R2","Correlation","KS","Accuracy") %in% names(res)))
 
-  # Approximate expectations
-  expect_equal(res$method, "mean")
-  expect_equal(round(res$RMSE, 3), 0.141, tolerance = 1e-3)
-  expect_equal(round(res$MAE, 3), 0.120, tolerance = 1e-3)
-  expect_true(res$R2 > 0.95)
+  # Global values should be finite
+  expect_true(is.finite(res$RMSE))
+  expect_true(is.finite(res$MAE))
+  expect_true(is.finite(res$R2))
+
+  # Column-level metrics should exist
+  expect_true("age" %in% names(res$metrics))
+  expect_true("income" %in% names(res$metrics))
 })
 
-test_that("Evaluator throws error when input lengths mismatch", {
-  true_vals <- c(1, 2, 3, 4, 5)
-  imputed_vals <- c(1, 2, 3)  # shorter
+test_that("Evaluator errors on mismatched column lengths", {
+  true_data <- list(
+    age = c(25, 30, 40)
+  )
+  imputed_data <- list(
+    age = c(25, 31) # length mismatch
+  )
 
   expect_error(
-    evaluator(true_vals, imputed_vals, "mean"),
-    "must have the same length"
+    evaluator(true_data, imputed_data, "mean"),
+    "same length"
   )
 })

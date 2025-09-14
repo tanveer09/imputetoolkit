@@ -2,7 +2,7 @@
 % Please edit documentation in R/imputer.R
 \name{print.evaluator}
 \alias{print.evaluator}
-\title{Print method for evaluator objects}
+\title{print.evaluator}
 \usage{
 \method{print}{evaluator}(x, ...)
 }

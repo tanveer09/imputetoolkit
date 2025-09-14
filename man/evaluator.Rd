@@ -2,26 +2,32 @@
 % Please edit documentation in R/imputer.R
 \name{evaluator}
 \alias{evaluator}
-\title{Create an evaluator object}
+\title{evaluator}
 \usage{
-evaluator(true_vals, imputed_vals, method)
+evaluator(true_data, imputed_data, method)
 }
 \arguments{
-\item{true_vals}{Numeric vector of actual values (ground truth).}
+\item{true_data}{A named list of numeric vectors with actual (ground truth) values.}
 
-\item{imputed_vals}{Numeric vector of imputed values (same length as true_vals).}
+\item{imputed_data}{A named list of numeric vectors with imputed values.}
 
-\item{method}{Character string naming the imputation method.}
+\item{method}{A string giving the imputation method name (e.g., "mean", "knn").}
 }
 \value{
-An object of class "evaluator" containing method name and metrics.
+An object of class "evaluator" containing per-column and global metrics.
 }
 \description{
-Create an evaluator object
+Create an evaluator object for imputation quality
 }
 \examples{
-true_vals <- c(1, 2, 3, 4, 5)
-imputed_vals <- c(1.1, 1.9, 3.2, 3.8, 5.1)
-result <- evaluator(true_vals, imputed_vals, "mean")
+true_data <- list(
+  age = c(25, 30, 40),
+  income = c(50000, 60000, 70000)
+)
+imputed_data <- list(
+  age = c(25, 31, 39),
+  income = c(50000, 61000, 69000)
+)
+result <- evaluator(true_data, imputed_data, "mean")
 print(result)
 }

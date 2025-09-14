@@ -11,15 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // evaluate_imputation
-List evaluate_imputation(NumericVector true_vals, NumericVector imputed_vals, std::string method);
-RcppExport SEXP _imputetoolkit_evaluate_imputation(SEXP true_valsSEXP, SEXP imputed_valsSEXP, SEXP methodSEXP) {
+List evaluate_imputation(List true_data, List imputed_data, std::string method);
+RcppExport SEXP _imputetoolkit_evaluate_imputation(SEXP true_dataSEXP, SEXP imputed_dataSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type true_vals(true_valsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type imputed_vals(imputed_valsSEXP);
+    Rcpp::traits::input_parameter< List >::type true_data(true_dataSEXP);
+    Rcpp::traits::input_parameter< List >::type imputed_data(imputed_dataSEXP);
     Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(evaluate_imputation(true_vals, imputed_vals, method));
+    rcpp_result_gen = Rcpp::wrap(evaluate_imputation(true_data, imputed_data, method));
     return rcpp_result_gen;
 END_RCPP
 }
