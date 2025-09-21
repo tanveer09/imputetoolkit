@@ -1,42 +1,51 @@
-test_that("Evaluator computes metrics correctly for simple numeric data", {
-  true_data <- list(
-    age = c(25, 30, 40),
-    income = c(50000, 60000, 70000, 8000)
-  )
-  imputed_data <- list(
-    age = c(25, 31, 39),
-    income = c(50000, 61000, 69000, 8001)
-  )
+test_that("evaluator runs with all methods on synthetic dataset", {
+  # locate bundled dataset
+  file <- system.file("extdata", "synthetic_dataset.csv", package = "imputetoolkit")
+  expect_true(file.exists(file))
 
-  res <- evaluator(true_data, imputed_data, "mean")
+  # run evaluator (explicit filename argument)
+  results <- evaluator(filename = file)
 
-  print.evaluator(res)
+  # check that all methods are present
+  expect_named(results, c("mean_mode", "median_mode", "mice"))
 
-  # Structure
-  expect_s3_class(res, "evaluator")
-  expect_true("metrics" %in% names(res))
-  expect_true(all(c("RMSE","MAE","R2","Correlation","KS","Accuracy") %in% names(res)))
+  # --- Mean/Mode ---
+  mean_eval <- results$mean_mode
+  expect_s3_class(mean_eval, "evaluator")
+  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(mean_eval)))
 
-  # Global values should be finite
-  expect_true(is.finite(res$RMSE))
-  expect_true(is.finite(res$MAE))
-  expect_true(is.finite(res$R2))
+  # --- Median/Mode ---
+  median_eval <- results$median_mode
+  expect_s3_class(median_eval, "evaluator")
+  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(median_eval)))
 
-  # Column-level metrics should exist
-  expect_true("age" %in% names(res$metrics))
-  expect_true("income" %in% names(res$metrics))
-})
+  # --- MICE ---
+  testthat::skip_if_not_installed("mice")
+  mice_eval <- results$mice
+  expect_s3_class(mice_eval, "evaluator")
+  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(mice_eval)))
 
-test_that("Evaluator errors on mismatched column lengths", {
-  true_data <- list(
-    age = c(25, 30, 40)
-  )
-  imputed_data <- list(
-    age = c(25, 31) # length mismatch
-  )
+  # --- Summary & print ---
+  expect_s3_class(summary(mean_eval), "data.frame")
+  expect_s3_class(summary(median_eval), "data.frame")
 
-  expect_error(
-    evaluator(true_data, imputed_data, "mean"),
-    "same length"
-  )
+  # printing shouldn't error
+  expect_invisible(print(mean_eval))
+  expect_invisible(print(median_eval))
+
+  # --- Wrapper functions ---
+  metrics_df <- extract_metrics(results)
+  expect_s3_class(metrics_df, "data.frame")
+
+  # print_metrics returns a knitr_kable (visible), not invisible
+  expect_s3_class(print_metrics(results), "knitr_kable")
+
+  # plot_metrics should return a ggplot object
+  expect_s3_class(plot_metrics(results, "RMSE"), "ggplot")
+
+  # suggestion should return a character scalar
+  expect_type(suggest_best_method(results, "RMSE"), "character")
+
+  # evaluate_results should return invisibly
+  expect_invisible(evaluate_results(results, metric = "RMSE"))
 })
