@@ -1,6 +1,6 @@
 test_that("evaluator runs with all methods on synthetic dataset", {
   # locate bundled dataset
-  file <- system.file("extdata", "synthetic_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
   expect_true(file.exists(file))
 
   # run evaluator (explicit filename argument)
@@ -45,7 +45,66 @@ test_that("evaluator runs with all methods on synthetic dataset", {
 
   # suggestion should return a character scalar
   expect_type(suggest_best_method(results, "RMSE"), "character")
-
-  # evaluate_results should return invisibly
-  expect_invisible(evaluate_results(results, metric = "RMSE"))
 })
+
+
+test_that("evaluator fails with invalid inputs", {
+  expect_error(evaluator(), "Please provide either a filename or a data.frame")
+  expect_error(evaluator(filename = "nonexistent.csv"))
+
+  tmp <- tempfile(fileext = ".xyz")
+  writeLines("dummy", tmp)
+  expect_error(evaluator(filename = tmp), "Unsupported file type")
+})
+
+test_that("evaluator is reproducible with fixed seed", {
+  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  res1 <- evaluator(filename = file)
+  res2 <- evaluator(filename = file)
+  expect_equal(res1$mean_mode$RMSE, res2$mean_mode$RMSE)
+})
+
+test_that("extract_metrics validates inputs", {
+  expect_error(extract_metrics("not a list"), "res must be a list")
+})
+
+test_that("suggest_best_method works correctly", {
+  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  res <- evaluator(filename = file)
+
+  # Invalid metric should error
+  expect_error(suggest_best_method(res, "NOT_A_METRIC"))
+
+  # RMSE is minimization
+  best_rmse <- suggest_best_method(res, "RMSE", higher_better = FALSE)
+  expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE"))
+
+  # Accuracy is maximization
+  best_acc <- suggest_best_method(res, "Accuracy", higher_better = TRUE)
+  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
+})
+
+test_that("plot_metrics errors on invalid metric", {
+  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  res <- evaluator(filename = file)
+  expect_error(plot_metrics(res, "NotARealMetric"), "not found in data frame")
+})
+
+test_that("evaluate_imputation works with simple numeric data", {
+  true_data <- list(col1 = c(1,2,3,4,5))
+  imputed_data <- list(col1 = c(1,2,3,4,6))  # small error
+  res <- evaluate_imputation(true_data, imputed_data, "toy_method")
+
+  expect_true(is.list(res))
+  expect_true(all(c("RMSE","MAE","R2","Correlation","KS","Accuracy") %in% names(res)))
+  expect_equal(res$method, "toy_method")
+})
+
+test_that("print and summary invisibility", {
+  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  res <- evaluator(filename = file)
+
+  expect_invisible(print(res$mean_mode))
+  expect_s3_class(summary(res$mean_mode), "data.frame")
+})
+

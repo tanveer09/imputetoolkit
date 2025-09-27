@@ -4,30 +4,34 @@
 \alias{evaluator}
 \title{evaluator}
 \usage{
-evaluator(true_data, imputed_data, method)
+evaluator(data = NULL, filename = NULL)
 }
 \arguments{
-\item{true_data}{A named list of numeric vectors with actual (ground truth) values.}
+\item{data}{A data.frame that has already been loaded in R. Optional if \code{filename} is provided.}
 
-\item{imputed_data}{A named list of numeric vectors with imputed values.}
-
-\item{method}{A string giving the imputation method name (e.g., "mean", "knn").}
+\item{filename}{Path to a data file (CSV, TSV, TXT, XLSX, XLS, RDS). Optional if \code{data} is provided.}
 }
 \value{
-An object of class "evaluator" containing per-column and global metrics.
+A list of evaluator objects (one per imputation method).
 }
 \description{
-Create an evaluator object for imputation quality
+Full pipeline: data cleaning, missingness injection, imputation, and evaluation.
 }
 \examples{
-true_data <- list(
-  age = c(25, 30, 40),
-  income = c(50000, 60000, 70000)
-)
-imputed_data <- list(
-  age = c(25, 31, 39),
-  income = c(50000, 61000, 69000)
-)
-result <- evaluator(true_data, imputed_data, "mean")
-print(result)
+# Example 1: Using a file shipped with the package
+file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+\dontrun{
+res <- evaluator(filename = file)
+print(res$mean_mode)
+summary(res$median_mode)
+}
+
+# Example 2: Passing a pre-loaded data.frame
+df <- utils::read.csv(system.file("extdata", "synthetic_mixed_missing_dataset.csv",
+                                  package = "imputetoolkit"),
+                      stringsAsFactors = TRUE)
+\dontrun{
+res <- evaluator(data = df)
+print(res$mean_mode)
+}
 }

@@ -1,8 +1,8 @@
 ---
-title: "Vignettes from 'imputetoolkit' package"
+title: "my-vignette"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignettes from 'imputetoolkit' package}
+  %\VignetteIndexEntry{my-vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

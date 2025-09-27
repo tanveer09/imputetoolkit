@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{An evaluator object}
 
-\item{...}{further arguments}
+\item{...}{Additional arguments (ignored)}
 }
 \description{
 Print method for evaluator objects

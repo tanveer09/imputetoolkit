@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{An evaluator object}
 
-\item{...}{further arguments}
+\item{...}{Additional arguments (ignored)}
 }
 \description{
 Summary method for evaluator objects

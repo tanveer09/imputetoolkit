@@ -12,10 +12,11 @@
 #' @importFrom readxl read_excel
 #' @importFrom stats median
 #' @importFrom mice mice complete
+#' @importFrom rlang .data
 #'
 #' @examples
 #' # Example 1: Using a file shipped with the package
-#' file <- system.file("extdata", "synthetic_dataset.csv", package = "imputetoolkit")
+#' file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
 #' \dontrun{
 #' res <- evaluator(filename = file)
 #' print(res$mean_mode)
@@ -23,7 +24,7 @@
 #' }
 #'
 #' # Example 2: Passing a pre-loaded data.frame
-#' df <- utils::read.csv(system.file("extdata", "synthetic_dataset.csv",
+#' df <- utils::read.csv(system.file("extdata", "synthetic_mixed_missing_dataset.csv",
 #'                                   package = "imputetoolkit"),
 #'                       stringsAsFactors = TRUE)
 #' \dontrun{
@@ -237,7 +238,7 @@ extract_metrics <- function(res) {
 
 #' Print evaluation metrics for imputation methods
 #'
-#' @param metrics_df A data frame returned from extract_metrics()
+#' @param x A result list returned by evaluator()
 #' @return Prints the metrics in a clean table format
 #' @export
 print_metrics <- function(x) {
@@ -257,7 +258,7 @@ print_metrics <- function(x) {
 
 #' Plot evaluation metrics
 #'
-#' @param metrics_df A data frame returned from extract_metrics()
+#' @param x A result list returned by evaluator()
 #' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "Accuracy")
 #' @return A ggplot object
 #' @export
@@ -272,7 +273,7 @@ plot_metrics <- function(x, metric = "RMSE") {
     stop(paste("Metric", metric, "not found in data frame"))
   }
 
-  ggplot2::ggplot(metrics_df, ggplot2::aes(x = Method, y = .data[[metric]], fill = Method)) +
+  ggplot2::ggplot(metrics_df, ggplot2::aes(x = "Method", y = !!ggplot2::sym(metric), fill = "Method")) +
     ggplot2::geom_bar(stat = "identity", position = "dodge") +
     ggplot2::theme_minimal() +
     ggplot2::labs(
@@ -285,7 +286,7 @@ plot_metrics <- function(x, metric = "RMSE") {
 
 #' Suggest the best imputation method
 #'
-#' @param metrics_df A data frame with evaluation metrics
+#' @param x A result list returned by evaluator()
 #' @param metric Character, metric to optimize ("RMSE", "MAE", "Accuracy", "F1")
 #' @param higher_better Logical, whether higher values indicate better performance
 #' @return Name of the suggested best method
