@@ -130,27 +130,115 @@ suggest_best_method(res, "Accuracy", higher_better = TRUE)
 ### Run Evaluator
 
 ``` r
-res <- evaluator(filename = file)
+filename <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+raw_data <- read.csv(filename, stringsAsFactors = TRUE)
+res <- evaluator(data = raw_data)
 ```
 
 ### Print & Summarize
 
 ``` r
 print(res$mean_mode)
+```
+
+*Output:*
+
+```         
+Evaluation for method: Mean/Mode 
+Global Metrics:
+  RMSE       : 7556.136 
+  MAE        : 6543.196 
+  R^2        : -1.2422 
+  Correlation: NA 
+  KS         : 0.686 
+  Accuracy   : 0.0992 
+```
+
+``` r
 summary(res$mean_mode)
+```
+
+*Output (example table):*
+
+```         
+        Column         RMSE          MAE            R2 Correlation        KS   Accuracy
+1          age    17.347819    14.787250 -0.0025988869          NA 0.5555556 0.00000000
+2       income 37756.906642 32695.668553 -0.0086117249          NA 0.5567010 0.00000000
+3        color     3.364834     3.056842 -4.7245331051          NA 1.0000000 0.00000000
+4    education     1.663998     1.284444 -1.4742295337          NA 0.7077778 0.29222222
+5 satisfaction     1.398599     1.182745 -0.0009871836          NA 0.6101961 0.20392157
+6       GLOBAL  7556.136378  6543.195967 -1.2421920868          NA 0.6860461 0.09922876
 ```
 
 ### Compare Methods
 
 ``` r
+# Tabular comparison
 print_metrics(res)
+```
+
+*Output (knitr_kable preview):*
+
+```         
+
+| Method      |      RMSE |      MAE |      R2 | Correlation |     KS | Accuracy |
+|:------------|----------:|---------:|--------:|------------:|-------:|---------:|
+| Mean/Mode   |  7556.136 | 6543.196 | -1.2422 |          NA | 0.6860 |   0.0992 |
+| Median/Mode |  7563.103 | 6551.639 | -1.2424 |          NA | 0.6827 |   0.1033 |
+| MICE        | 10920.341 | 9001.991 | -1.5667 |     -0.0465 | 0.2071 |   0.1017 |
+```
+
+### Comparison of Imputation Methods
+
+``` r
+# Plot a single metric (RMSE across methods)
 plot_metrics(res, "RMSE")
 ```
+
+*Output (saved plot):* ![RMSE Comparison](inst/extdata/figures/plot_rmse.png)
+
+``` r
+# Plot all metrics in separate panels
+plot_metrics(res, "ALL")
+```
+
+*Output (saved plot):* ![All Metrics Comparison](inst/extdata/figures/plot_all.png)
 
 ### Suggest Best Method
 
 ``` r
-suggest_best_method(res, metric = "RMSE", higher_better = FALSE)
+# Suggest best method for a single metric
+suggest_best_method(res, metric = "RMSE")
+```
+
+*Output:*
+
+```         
+Suggested best imputation method based on RMSE: Mean/Mode
+[1] "Mean/Mode"
+```
+
+``` r
+# Suggest best methods across all metrics (grouped summary)
+output <- suggest_best_method(res, metric = "ALL")
+```
+
+*Output:*
+
+```         
+Suggested best imputation methods across metrics:
+    As per R2, KS, RMSE, MAE metrics: Mean/Mode
+    As per Accuracy metrics: Median/Mode
+```
+
+*Return object (list):*
+
+```         
+$`Mean/Mode`
+[1] "R2"   "KS"   "RMSE" "MAE" 
+
+$`Median/Mode`
+[1] "Accuracy"
 ```
 
 ------------------------------------------------------------------------

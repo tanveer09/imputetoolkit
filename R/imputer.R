@@ -86,7 +86,7 @@ evaluator <- function(data = NULL, filename = NULL) {
   cat_cols <- names(raw_data)[sapply(raw_data, is.factor)]
   raw_data_modified[cat_cols] <- lapply(raw_data_modified[cat_cols], factor)
 
-  # ---- 2. Helper ----
+  # ---- 2. Get mode of the given column ----
   get_mode <- function(x) {
     ux <- unique(x[!is.na(x)])
     ux[which.max(tabulate(match(x, ux)))]
