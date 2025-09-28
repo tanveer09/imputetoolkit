@@ -17,3 +17,8 @@ A ggplot object
 \description{
 Plot evaluation metrics
 }
+\seealso{
+\link[vignette]{imputetoolkit}
+For a complete tutorial, see the package vignette:
+\code{vignette("imputetoolkit")}
+}

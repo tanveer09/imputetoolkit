@@ -6,6 +6,9 @@
 #' @param filename Path to a data file (CSV, TSV, TXT, XLSX, XLS, RDS). Optional if `data` is provided.
 
 #' @return A list of evaluator objects (one per imputation method).
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 #'
 #' @importFrom utils read.csv read.delim
@@ -164,6 +167,9 @@ evaluator <- function(data = NULL, filename = NULL) {
 #'
 #' @param x An evaluator object
 #' @param ... Additional arguments (ignored)
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 print.evaluator <- function(x, ...) {
 
@@ -184,6 +190,9 @@ print.evaluator <- function(x, ...) {
 #'
 #' @param object An evaluator object
 #' @param ... Additional arguments (ignored)
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 summary.evaluator <- function(object, ...) {
   per_col <- do.call(rbind, lapply(object$metrics, function(m) as.data.frame(as.list(m))))
@@ -243,6 +252,9 @@ extract_metrics <- function(res) {
 #'
 #' @param x A result list returned by evaluator()
 #' @return Prints the metrics in a clean table format
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 print_metrics <- function(x) {
 
@@ -264,6 +276,9 @@ print_metrics <- function(x) {
 #' @param x A result list returned by evaluator()
 #' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL")
 #' @return A ggplot object
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 plot_metrics <- function(x, metric = "RMSE") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
@@ -323,6 +338,9 @@ plot_metrics <- function(x, metric = "RMSE") {
 #'   If "ALL" or missing, the function compares across all metrics.
 #' @return If a single metric is provided, returns the best method (character).
 #'   If "ALL", returns a named list showing the metrics associated with each best method.
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 suggest_best_method <- function(x, metric = "ALL") {
 
@@ -389,12 +407,14 @@ suggest_best_method <- function(x, metric = "ALL") {
 #' @param res The result object returned from evaluator()
 #' @param metric Character, which metric to optimize (default = "RMSE")
 #' @return Prints a table, plots results, and returns the suggested method
+#' @seealso \link[vignette]{imputetoolkit}
+#' For a complete tutorial, see the package vignette:
+#' \code{vignette("imputetoolkit")}
 #' @export
 evaluate_results <- function(res, metric = "RMSE") {
-  metrics_df <- extract_metrics(res)
-  print_metrics(metrics_df)
-  print(plot_metrics(metrics_df, metric))
-  best <- suggest_best_method(metrics_df, metric)
+  print_metrics(res)
+  print(plot_metrics(res, metric))
+  best <- suggest_best_method(res, metric)
   invisible(best)
 }
 

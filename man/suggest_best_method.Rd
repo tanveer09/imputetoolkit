@@ -20,3 +20,8 @@ If "ALL", returns a named list showing the metrics associated with each best met
 \description{
 Suggest the best imputation method
 }
+\seealso{
+\link[vignette]{imputetoolkit}
+For a complete tutorial, see the package vignette:
+\code{vignette("imputetoolkit")}
+}

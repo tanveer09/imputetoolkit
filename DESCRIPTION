@@ -1,6 +1,6 @@
 Package: imputetoolkit
 Title: Imputation Toolkit for Evaluating Missing Data Methods
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Tanveer", "Singh", email = "k.tanveer.singh@gmail.com", role = c("aut", "cre"))
 Description: Provides tools for injecting missingness into datasets,

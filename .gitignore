@@ -65,3 +65,5 @@ src/*.o.d
 # Misc
 *.swp
 *.log
+/doc/
+/Meta/

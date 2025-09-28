@@ -35,3 +35,8 @@ res <- evaluator(data = df)
 print(res$mean_mode)
 }
 }
+\seealso{
+\link[vignette]{imputetoolkit}
+For a complete tutorial, see the package vignette:
+\code{vignette("imputetoolkit")}
+}
