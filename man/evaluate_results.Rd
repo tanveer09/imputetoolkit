@@ -4,14 +4,12 @@
 \alias{evaluate_results}
 \title{Evaluate results: print, plot, and suggest best method}
 \usage{
-evaluate_results(res, metric = "RMSE", higher_better = FALSE)
+evaluate_results(res, metric = "RMSE")
 }
 \arguments{
 \item{res}{The result object returned from evaluator()}
 
 \item{metric}{Character, which metric to optimize (default = "RMSE")}
-
-\item{higher_better}{Logical, whether higher values indicate better performance}
 }
 \value{
 Prints a table, plots results, and returns the suggested method

@@ -43,9 +43,20 @@ test_that("evaluator runs with all methods on synthetic dataset", {
   # plot_metrics should return a ggplot object
   expect_s3_class(plot_metrics(results, "RMSE"), "ggplot")
 
-  # suggestion should return a character scalar
-  expect_type(suggest_best_method(results, "RMSE"), "character")
+  # --- suggest_best_method checks ---
+  # single metric (returns character)
+  best_rmse <- suggest_best_method(results, "RMSE")
+  expect_type(best_rmse, "character")
+  expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE"))
+
+  # ALL metrics (returns grouped list)
+  best_all <- suggest_best_method(results, "ALL")
+  expect_type(best_all, "list")
+  # names of list should be methods, values should be vectors of metrics
+  expect_true(all(unlist(best_all) %in% c("RMSE", "MAE", "R2", "KS", "Accuracy")))
+  expect_true(all(names(best_all) %in% c("Mean/Mode", "Median/Mode", "MICE")))
 })
+
 
 
 test_that("evaluator fails with invalid inputs", {
@@ -75,19 +86,41 @@ test_that("suggest_best_method works correctly", {
   # Invalid metric should error
   expect_error(suggest_best_method(res, "NOT_A_METRIC"))
 
-  # RMSE is minimization
-  best_rmse <- suggest_best_method(res, "RMSE", higher_better = FALSE)
+  # RMSE is minimum
+  best_rmse <- suggest_best_method(res, "RMSE")
   expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE"))
 
-  # Accuracy is maximization
-  best_acc <- suggest_best_method(res, "Accuracy", higher_better = TRUE)
+  # MAE is minimum
+  best_acc <- suggest_best_method(res, "MAE")
+  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
+
+  # R2 is maximum
+  best_acc <- suggest_best_method(res, "R2")
+  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
+
+  # KS is maximum
+  best_acc <- suggest_best_method(res, "KS")
+  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
+
+  # Accuracy is maximum
+  best_acc <- suggest_best_method(res, "Accuracy")
   expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
 })
 
-test_that("plot_metrics errors on invalid metric", {
+test_that("plot_metrics works correctly", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
-  expect_error(plot_metrics(res, "NotARealMetric"), "not found in data frame")
+
+  # invalid metric should error
+  expect_error(plot_metrics(res, "NotARealMetric"), "not found")
+
+  # single valid metric returns ggplot
+  p1 <- plot_metrics(res, "RMSE")
+  expect_s3_class(p1, "ggplot")
+
+  # ALL should return a facetted ggplot
+  p2 <- plot_metrics(res, "ALL")
+  expect_s3_class(p2, "ggplot")
 })
 
 test_that("evaluate_imputation works with simple numeric data", {

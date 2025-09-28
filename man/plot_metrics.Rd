@@ -9,7 +9,7 @@ plot_metrics(x, metric = "RMSE")
 \arguments{
 \item{x}{A result list returned by evaluator()}
 
-\item{metric}{Character, which metric to plot (e.g., "RMSE", "MAE", "Accuracy")}
+\item{metric}{Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL")}
 }
 \value{
 A ggplot object

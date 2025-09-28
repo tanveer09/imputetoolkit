@@ -54,7 +54,6 @@ Implemented with an efficient **Rcpp backend** and an intuitive **S3 interface**
 -   **RcppExports.cpp**
     -   Auto-generated bindings between R and C++.
 
-
 ### Testing (tests/testthat/)
 
 -   **test-evaluator.R**
@@ -92,7 +91,6 @@ remotes::install_github("tanveer09/imputetoolkit@draft", INSTALL_opts = c("--ins
 library(testthat)
 test_package("imputetoolkit")
 ```
-
 
 Then load:
 

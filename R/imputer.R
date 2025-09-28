@@ -13,6 +13,9 @@
 #' @importFrom stats median
 #' @importFrom mice mice complete
 #' @importFrom rlang .data
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr all_of
+
 #'
 #' @examples
 #' # Example 1: Using a file shipped with the package
@@ -259,70 +262,139 @@ print_metrics <- function(x) {
 #' Plot evaluation metrics
 #'
 #' @param x A result list returned by evaluator()
-#' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "Accuracy")
+#' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL")
 #' @return A ggplot object
 #' @export
 plot_metrics <- function(x, metric = "RMSE") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package 'ggplot2' is required. Please install it.")
   }
-
-  metrics_df <- extract_metrics(x)
-
-  if (!(metric %in% colnames(metrics_df))) {
-    stop(paste("Metric", metric, "not found in data frame"))
+  if (!requireNamespace("tidyr", quietly = TRUE)) {
+    stop("Package 'tidyr' is required. Please install it.")
   }
 
-  ggplot2::ggplot(metrics_df, ggplot2::aes(x = "Method", y = !!ggplot2::sym(metric), fill = "Method")) +
-    ggplot2::geom_bar(stat = "identity", position = "dodge") +
-    ggplot2::theme_minimal() +
-    ggplot2::labs(
-      title = paste("Comparison of Methods on", metric),
-      y = metric, x = "Method"
-    ) +
-    ggplot2::theme(legend.position = "none")
+  metrics_df <- extract_metrics(x)
+  valid_metrics <- c("RMSE", "MAE", "R2", "KS", "Accuracy")
+
+  if (metric == "ALL") {
+    long_df <- tidyr::pivot_longer(
+      metrics_df,
+      cols = dplyr::all_of(valid_metrics),
+      names_to = "Metric",
+      values_to = "Value"
+    )
+
+    p <- ggplot2::ggplot(long_df, ggplot2::aes(x = .data$Method, y = .data$Value, fill = .data$Method)) +
+      ggplot2::geom_bar(stat = "identity", position = "dodge") +
+      ggplot2::facet_wrap(~ Metric, scales = "free_y") +
+      ggplot2::theme_minimal() +
+      ggplot2::labs(
+        title = "Comparison of Methods across Metrics",
+        y = "Value", x = "Method"
+      ) +
+      ggplot2::theme(legend.position = "none")
+
+    return(p)
+
+  } else {
+    if (!(metric %in% valid_metrics)) {
+      stop("Metric ", metric, " not found. Please use one of: ", paste(valid_metrics, collapse = ", "), " or ALL")
+    }
+
+    p <- ggplot2::ggplot(metrics_df, ggplot2::aes(x = .data$Method, y = .data[[metric]], fill = .data$Method)) +
+      ggplot2::geom_bar(stat = "identity", position = "dodge") +
+      ggplot2::theme_minimal() +
+      ggplot2::labs(
+        title = paste("Comparison of Methods on", metric),
+        y = metric, x = "Method"
+      ) +
+      ggplot2::theme(legend.position = "none")
+
+    return(p)
+  }
 }
 
 
 #' Suggest the best imputation method
 #'
 #' @param x A result list returned by evaluator()
-#' @param metric Character, metric to optimize ("RMSE", "MAE", "Accuracy", "F1")
-#' @param higher_better Logical, whether higher values indicate better performance
-#' @return Name of the suggested best method
+#' @param metric Character, metric to optimize
+#'   ("RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL").
+#'   If "ALL" or missing, the function compares across all metrics.
+#' @return If a single metric is provided, returns the best method (character).
+#'   If "ALL", returns a named list showing the metrics associated with each best method.
 #' @export
-suggest_best_method <- function(x, metric = "RMSE", higher_better = FALSE) {
+suggest_best_method <- function(x, metric = "ALL") {
 
   metrics_df <- extract_metrics(x)
 
-  if (!(metric %in% colnames(metrics_df))) {
-    stop(paste("Metric", metric, "not found in data frame"))
-  }
+  higher_metrics <- c("R2", "KS", "Accuracy")
+  lower_metrics  <- c("RMSE", "MAE")
+  valid_metrics  <- c(higher_metrics, lower_metrics)
 
-  if (higher_better) {
-    best_idx <- which.max(metrics_df[[metric]])
+  if (metric == "ALL" || is.null(metric)) {
+    best_methods <- list()
+
+    for (m in valid_metrics) {
+      if (!(m %in% colnames(metrics_df))) next
+
+      if (m %in% higher_metrics) {
+        best_idx <- which.max(metrics_df[[m]])
+      } else {
+        best_idx <- which.min(metrics_df[[m]])
+      }
+      method <- metrics_df$Method[best_idx]
+      best_methods[[m]] <- method
+    }
+
+    # Group metrics by best method
+    grouped <- split(names(best_methods), unlist(best_methods))
+
+    # Build summary message
+    msg <- paste(
+      vapply(names(grouped),
+             function(method) {
+               metrics <- paste(grouped[[method]], collapse = ", ")
+               paste0("    As per ", metrics, " metrics: ", method)
+             },
+             character(1L)),
+      collapse = "\n"
+    )
+
+    message("Suggested best imputation methods across metrics:\n", msg)
+    return(grouped)
+
   } else {
-    best_idx <- which.min(metrics_df[[metric]])
-  }
+    if (!(metric %in% valid_metrics)) {
+      stop("Unknown metric: ", metric,
+           ". Please use one of: ", paste(valid_metrics, collapse = ", "), ", or ALL")
+    }
 
-  best_method <- metrics_df$Method[best_idx]
-  message("Suggested best method based on ", metric, ": ", best_method)
-  return(best_method)
+    if (metric %in% higher_metrics) {
+      best_idx <- which.max(metrics_df[[metric]])
+    } else {
+      best_idx <- which.min(metrics_df[[metric]])
+    }
+
+    best_method <- metrics_df$Method[best_idx]
+    message("Suggested best imputation method based on ", metric, ": ", best_method)
+    return(best_method)
+  }
 }
+
 
 
 #' Evaluate results: print, plot, and suggest best method
 #'
 #' @param res The result object returned from evaluator()
 #' @param metric Character, which metric to optimize (default = "RMSE")
-#' @param higher_better Logical, whether higher values indicate better performance
 #' @return Prints a table, plots results, and returns the suggested method
 #' @export
-evaluate_results <- function(res, metric = "RMSE", higher_better = FALSE) {
+evaluate_results <- function(res, metric = "RMSE") {
   metrics_df <- extract_metrics(res)
   print_metrics(metrics_df)
   print(plot_metrics(metrics_df, metric))
-  best <- suggest_best_method(metrics_df, metric, higher_better)
+  best <- suggest_best_method(metrics_df, metric)
   invisible(best)
 }
 

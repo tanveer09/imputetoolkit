@@ -4,17 +4,18 @@
 \alias{suggest_best_method}
 \title{Suggest the best imputation method}
 \usage{
-suggest_best_method(x, metric = "RMSE", higher_better = FALSE)
+suggest_best_method(x, metric = "ALL")
 }
 \arguments{
 \item{x}{A result list returned by evaluator()}
 
-\item{metric}{Character, metric to optimize ("RMSE", "MAE", "Accuracy", "F1")}
-
-\item{higher_better}{Logical, whether higher values indicate better performance}
+\item{metric}{Character, metric to optimize
+("RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL").
+If "ALL" or missing, the function compares across all metrics.}
 }
 \value{
-Name of the suggested best method
+If a single metric is provided, returns the best method (character).
+If "ALL", returns a named list showing the metrics associated with each best method.
 }
 \description{
 Suggest the best imputation method

@@ -20,7 +20,9 @@ Imports:
     readxl,
     ggplot2,
     knitr,
-    rlang
+    rlang,
+    tidyr,
+    dplyr
 Suggests: 
     caret,
     rmarkdown,
