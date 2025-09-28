@@ -77,12 +77,21 @@ Together, these tests ensure **robustness, reproducibility, and informative erro
 
 Make sure you have R (≥ 4.0) and the **devtools/remotes** package:
 
+### Install with devtools
+
+If you prefer the devtools package:
+
 ``` r
 install.packages("devtools")
-devtools::install_github("tanveer09/imputetoolkit@draft")
+devtools::install_github("tanveer09/imputetoolkit@draft", build_vignettes = TRUE)
+
 ```
 
-or 
+or
+
+### Install with remotes (recommended)
+
+If you use remotes, this will also build vignettes:
 
 ``` r
 install.packages("remotes")
@@ -99,7 +108,7 @@ library(testthat)
 test_package("imputetoolkit")
 ```
 
-Then load:
+#### Load the package
 
 ``` r
 library(imputetoolkit)
@@ -253,7 +262,24 @@ $`Median/Mode`
 ## Documentation
 
 -   Function manuals: `?evaluator`, `?plot_metrics`, etc.
--   Vignettes: under `vignettes/` (in progress).
+-   Vignettes: Source vignette: `vignettes/my-vignette.Rmd`
+
+``` r 
+browseVignettes("imputetoolkit")
+```
+
+Covers:
+
+- Installing and loading the package
+
+- Running the evaluator with the sample dataset
+
+- Comparing imputation methods (Mean/Mode, Median/Mode, MICE)
+
+- Visualizing metrics with plots
+
+- Suggesting the best method
+
 -   HTML docs: pkgdown site at <https://tanveer09.github.io/imputetoolkit/>
 
 ------------------------------------------------------------------------
@@ -262,7 +288,6 @@ $`Median/Mode`
 
 -   C++ backend (`Evaluator` class) demonstrates **OOP encapsulation**.
 -   S3 interface on the R side for consistent `print`, `summary`, and plotting.
--   Roadmap includes adding **kNN** and **missForest** imputations.
 -   Current release: **core pipeline stable + tested**.
 
 ------------------------------------------------------------------------

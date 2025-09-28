@@ -67,3 +67,4 @@ src/*.o.d
 *.log
 /doc/
 /Meta/
+docs
