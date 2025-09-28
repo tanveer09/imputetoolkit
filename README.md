@@ -1,9 +1,10 @@
 # imputetoolkit <img src="https://www.r-project.org/logo/Rlogo.png" width="40" align="right"/>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://yourusername.github.io/imputetoolkit/) [![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://tanveer09.github.io/imputetoolkit/) [![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
 
-| An R package for **evaluating missing data imputation methods** with a unified **R + C++ backend**. It provides a full pipeline for **data cleaning, missingness injection, imputation, and evaluation**, with support for **multiple imputation methods** and a suite of **evaluation metrics**. \|
-| Implemented with an efficient **Rcpp backend** and an intuitive **S3 interface** (`print`, `summary`, `plot`), the package is designed for **benchmarking imputation strategies** and teaching/experimentation with missing data handling. \|
+An R package for **evaluating missing data imputation methods** with a unified **R + C++ backend**. It provides a full pipeline for **data cleaning, missingness injection, imputation, and evaluation**, with support for **multiple imputation methods** and a suite of **evaluation metrics**.
+
+Implemented with an efficient **Rcpp backend** and an intuitive **S3 interface** (`print`, `summary`, `plot`), the package is designed for **benchmarking imputation strategies** and teaching/experimentation with missing data handling.
 
 ## Package Components
 
