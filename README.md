@@ -82,11 +82,18 @@ install.packages("devtools")
 devtools::install_github("tanveer09/imputetoolkit@draft")
 ```
 
-Include unit tests during installation and execute them:
+or 
 
 ``` r
 install.packages("remotes")
-remotes::install_github("tanveer09/imputetoolkit@draft", INSTALL_opts = c("--install-tests"), force = TRUE)
+remotes::install_github("tanveer09/imputetoolkit@draft", build_vignettes = TRUE)
+```
+
+To include unit tests during installation and execute:
+
+``` r
+install.packages("remotes")
+remotes::install_github("tanveer09/imputetoolkit@draft", INSTALL_opts = c("--install-tests"), build_vignettes = TRUE, force = TRUE)
 
 library(testthat)
 test_package("imputetoolkit")
