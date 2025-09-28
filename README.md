@@ -1,162 +1,180 @@
-# imputetoolkit
+# imputetoolkit <img src="https://www.r-project.org/logo/Rlogo.png" width="40" align="right"/>
 
-*Evaluate and compare multiple imputation methods with **consistent metrics** and an **intuitive S3 interface**.*
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://yourusername.github.io/imputetoolkit/) [![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
 
-`imputetoolkit` is an R package for evaluating the quality of data imputation methods.\
-This package implements an **object-oriented S3 interface** around an `evaluator` class that computes multiple metrics comparing imputed values with ground truth data.\
-It is designed to help researchers and practitioners benchmark different imputation strategies side-by-side, providing both per-column and global metrics such as RMSE, MAE, R², correlation recovery, KS statistic, and accuracy.\
-By wrapping results in an `evaluator` object, the package offers a consistent, user-friendly interface with familiar methods like `print()` and `summary()`.
+| An R package for **evaluating missing data imputation methods** with a unified **R + C++ backend**. It provides a full pipeline for **data cleaning, missingness injection, imputation, and evaluation**, with support for **multiple imputation methods** and a suite of **evaluation metrics**. \|
+| Implemented with an efficient **Rcpp backend** and an intuitive **S3 interface** (`print`, `summary`, `plot`), the package is designed for **benchmarking imputation strategies** and teaching/experimentation with missing data handling. \|
 
-------------------------------------------------------------------------
+## Package Components
 
-## Justification for OO Programming
+### Core Structure
 
-The **evaluator** function is a strong candidate for Object-Oriented programming because:
+-   **DESCRIPTION / NAMESPACE**: Standard package metadata, dependencies, and exported functions.
+-   **R/**: R interface functions, wrapper utilities, and S3 methods.
+-   **src/**: C++ backend (`evaluator.cpp`, `imputer.cpp`) compiled via Rcpp.
+-   **tests/testthat/**: Unit tests for R and C++ integration.
+-   **vignettes/**: Demonstration of package usage and design.
+-   **inst/extdata/**: Sample dataset (`sample_dataset.csv`).
 
-1.  **Encapsulation of Related Components**
-    -   Imputation evaluation naturally produces multiple outputs: per-variable metrics (e.g., RMSE, MAE, R²), global summaries, and metadata (method used, variables evaluated).\
-    -   OO design allows these pieces to live inside a single structured object (`class = "evaluator"`) instead of scattering them across lists or separate return values.
-2.  **Clear and Familiar Workflow for Users**
-    -   Users can call familiar generic functions such as `print()`, `summary()`, or even `plot()` (if extended) on the evaluator object.\
-    -   This design mirrors R’s built-in modeling ecosystem (`lm`, `glm`, `kmeans`), making it intuitive and lowering the learning curve.
-3.  **Extensibility for Future Development**
-    -   New metrics (e.g., correlation recovery, KS statistic) can be easily added without changing how users interact with the object.\
-    -   Additional methods (`plot.evaluator`, `predict.evaluator`) could later extend functionality without rewriting core code.
-4.  **Consistency Across Analyses**
-    -   OO programming enforces a consistent structure: no matter which imputation method is evaluated, the output object behaves the same way.\
-    -   This helps ensure reproducibility and comparability across datasets.
-5.  **Alternatives Considered**
-    -   A *functional* approach (returning a plain list) would work, but it would force the user to manually extract fields like `$rmse` or `$r2`, making the workflow clunkier.\
-    -   R6 or Reference Classes could also be used, but for statistical models in R, **S3 classes are lightweight, idiomatic, and align with existing practices**.
+### R Files
 
-Overall, the evaluator is a **good candidate for OO programming** because it bundles rich, structured outputs into an intuitive object, provides a user-friendly interface, and remains extensible for future enhancements.
+-   **api.R**
+    -   Entry point functions for users.
+-   **imputer.R**
+    -   Implements helper routines for imputation (mean, median, mode, MICE).
+    -   **evaluator()**
+        -   Main pipeline: `evaluator()`\
+        -   Steps:
+            -   Load dataset (CSV, TSV, TXT, Excel, RDS).\
+            -   Clean categorical variables, inject controlled missingness.\
+            -   Apply multiple imputation strategies: **Mean/Mode**, **Median/Mode**, **MICE**.\
+            -   Collect true vs. imputed values.\
+            -   Pass to the **C++ backend evaluator** for metric computation.\
+        -   Exports S3 methods:
+            -   `print.evaluator`: concise textual summary.\
+            -   `summary.evaluator`: per-column + global metrics table.\
+            -   `plot_metrics`: ggplot comparison of methods.\
+            -   `print_metrics`: table-formatted comparison via knitr.\
+            -   `suggest_best_method`: choose method by metric (min/max).\
+            -   `evaluate_results`: wrapper to print, plot, and suggest best method.
+-   **RcppExports.R**
+    -   Auto-generated glue between R and C++ (via Rcpp).
 
-------------------------------------------------------------------------
+### C++ Files (src/)
 
-## Objects and Methods
+-   **evaluator.cpp**
+    -   Implements `evaluate_imputation()` (exported to R).\
+    -   Defines an **Evaluator class** that computes:
+        -   RMSE, MAE, R², correlation, KS statistic, Accuracy.\
+        -   Per-column metrics and global averages.\
+    -   Uses **OOP encapsulation** (private methods for column-level evaluation, public interface returning results).
+-   **imputer.cpp** *(extension point)*
+    -   Placeholder for additional algorithms (future work).
+-   **RcppExports.cpp**
+    -   Auto-generated bindings between R and C++.
 
--   **`evaluator()`**\
-    Constructor that creates an object of class `"evaluator"`.\
-    Takes two named lists of numeric vectors (`true_data`, `imputed_data`) and a method name.
 
--   **S3 Methods**
+### Testing (tests/testthat/)
 
-    -   `print.evaluator(x)` – displays global evaluation metrics for an imputation method.
-    -   `summary.evaluator(x)` – returns a `data.frame` with per-column metrics and global averages.
+-   **test-evaluator.R**
+    -   Tests the full pipeline with the synthetic dataset.\
+    -   Verifies all methods (`mean_mode`, `median_mode`, `mice`).\
+    -   Checks:
+        -   Metrics existence (`RMSE`, `MAE`, `R2`, `Correlation`, `KS`, `Accuracy`).\
+        -   `print` and `summary` invisibility.\
+        -   Wrapper functions (`extract_metrics`, `print_metrics`, `plot_metrics`, `suggest_best_method`).\
+        -   Error handling (missing filename/data, unsupported file types, invalid metric names).\
+        -   Reproducibility with fixed seed.
+-   **test-rcpp-evaluator.R**
+    -   Tests `evaluate_imputation()` directly with toy numeric data.\
+    -   Validates metrics computation, correct method labeling, and output structure.
 
--   **Metrics Computed** For each column:
-
-    -   Root Mean Squared Error (RMSE)
-    -   Mean Absolute Error (MAE)
-    -   R² (coefficient of determination)
-    -   Correlation recovery
-    -   Kolmogorov–Smirnov statistic (distribution similarity)
-    -   Accuracy (proportion of masked values correctly recovered)
-
-    These are also aggregated into **global values** stored in the `evaluator` object.
+Together, these tests ensure **robustness, reproducibility, and informative error handling**.
 
 ------------------------------------------------------------------------
 
 ## Installation
 
-You can install directly from GitHub:
+Make sure you have R (≥ 4.0) and the **devtools/remotes** package:
 
 ``` r
-# Install from GitHub
-devtools::install_github("tanveer09/imputetoolkit")
+install.packages("devtools")
+devtools::install_github("tanveer09/imputetoolkit@draft")
 ```
 
-------------------------------------------------------------------------
+Include unit tests during installation and execute them:
 
-## Usage Example
+``` r
+install.packages("remotes")
+remotes::install_github("tanveer09/imputetoolkit@draft", INSTALL_opts = c("--install-tests"), force = TRUE)
+
+library(testthat)
+test_package("imputetoolkit")
+```
+
+
+Then load:
 
 ``` r
 library(imputetoolkit)
-
-# Ground truth and imputed data
-true_data <- list(
-  age = c(25, 30, 40),
-  income = c(50000, 60000, 70000)
-)
-
-imputed_data <- list(
-  age = c(25, 31, 39),
-  income = c(50000, 61000, 69000)
-)
-
-# Create evaluator object
-result <- evaluator(true_data, imputed_data, method = "mean")
-
-# Inspect results
-print(result)
-summary(result)
 ```
 
-## Output (example)
+------------------------------------------------------------------------
+
+## Sample Dataset
+
+The package ships with a **synthetic mixed-type dataset** located at:
 
 ```         
-Evaluation for method: mean
-Global Metrics:
-  RMSE       : 1.2909
-  MAE        : 1.0000
-  R^2        : 0.9456
-  Correlation: 0.9827
-  KS         : 0.2000
-  Accuracy   : 0.5000
-
-Per-column metrics available in result$metrics
+inst/extdata/sample_dataset.csv
 ```
 
-------------------------------------------------------------------------
+This dataset contains **numeric and categorical columns** with controlled missingness, useful for benchmarking imputation strategies.
 
-## Workflow
-
-1.  **Perform** multiple imputations on your dataset (mean, median, kNN, MICE, etc.).
-2.  **Call** `evaluator(true_data, imputed_data, method)` for each method.
-3.  **Collect** results into a list and compare across methods.
-4.  **Use** `print()` for quick checks and `summary()` for detailed per-column analysis.
-
-------------------------------------------------------------------------
-
-## Testing
-
-Unit tests are provided under the `tests/testthat/` directory. To run all tests:
+### Example
 
 ``` r
-devtools::test()
+filename <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+raw_data <- read.csv(filename, stringsAsFactors = TRUE)
+res <- evaluator(data = raw_data)
+summary(res$mean_mode)
+#metrics_df <- extract_metrics(res)
+print_metrics(res)
+plot_metrics(res, "RMSE")
+suggest_best_method(res, "Accuracy", higher_better = TRUE)
 ```
 
-These tests check that:
+------------------------------------------------------------------------
 
--   Objects of class `"evaluator"` are created correctly.
--   Metrics are computed accurately for numeric data.
--   Errors are raised for invalid inputs (e.g., mismatched keys, NA/Inf values).
--   S3 methods (print, summary) return expected outputs.
+## Usage Examples
+
+### Run Evaluator
+
+``` r
+res <- evaluator(filename = file)
+```
+
+### Print & Summarize
+
+``` r
+print(res$mean_mode)
+summary(res$mean_mode)
+```
+
+### Compare Methods
+
+``` r
+print_metrics(res)
+plot_metrics(res, "RMSE")
+```
+
+### Suggest Best Method
+
+``` r
+suggest_best_method(res, metric = "RMSE", higher_better = FALSE)
+```
 
 ------------------------------------------------------------------------
 
 ## Documentation
 
-All functions are documented with **Roxygen2**. To rebuild documentation, run:
-
-``` r
-devtools::document()
-```
-
-Help pages are available for all major functions:
-
-``` r
-?evaluator
-?print.evaluator
-?summary.evaluator
-```
+-   Function manuals: `?evaluator`, `?plot_metrics`, etc.
+-   Vignettes: under `vignettes/` (in progress).
+-   HTML docs: pkgdown site at <https://tanveer09.github.io/imputetoolkit/>
 
 ------------------------------------------------------------------------
 
-## LLM Disclosure
+## Development Notes
 
-Some parts of this package — including **documentation drafting, README preparation, and sections of the R/C++ code (e.g., error handling and function scaffolding)**, were assisted by **ChatGPT (OpenAI)**.
+-   C++ backend (`Evaluator` class) demonstrates **OOP encapsulation**.
+-   S3 interface on the R side for consistent `print`, `summary`, and plotting.
+-   Roadmap includes adding **kNN** and **missForest** imputations.
+-   Current release: **core pipeline stable + tested**.
 
-All generated content was **reviewed, debugged, and adapted** before inclusion in the final submission.
+------------------------------------------------------------------------
 
+## License
 
+This package is released under the [MIT License](LICENSE).
+
+------------------------------------------------------------------------

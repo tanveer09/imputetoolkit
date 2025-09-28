@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' # Example 1: Using a file shipped with the package
-#' file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+#' file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
 #' \dontrun{
 #' res <- evaluator(filename = file)
 #' print(res$mean_mode)
@@ -24,7 +24,7 @@
 #' }
 #'
 #' # Example 2: Passing a pre-loaded data.frame
-#' df <- utils::read.csv(system.file("extdata", "synthetic_mixed_missing_dataset.csv",
+#' df <- utils::read.csv(system.file("extdata", "sample_dataset.csv",
 #'                                   package = "imputetoolkit"),
 #'                       stringsAsFactors = TRUE)
 #' \dontrun{

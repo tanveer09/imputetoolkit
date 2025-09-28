@@ -1,6 +1,6 @@
 test_that("evaluator runs with all methods on synthetic dataset", {
   # locate bundled dataset
-  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   expect_true(file.exists(file))
 
   # run evaluator (explicit filename argument)
@@ -58,7 +58,7 @@ test_that("evaluator fails with invalid inputs", {
 })
 
 test_that("evaluator is reproducible with fixed seed", {
-  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res1 <- evaluator(filename = file)
   res2 <- evaluator(filename = file)
   expect_equal(res1$mean_mode$RMSE, res2$mean_mode$RMSE)
@@ -69,7 +69,7 @@ test_that("extract_metrics validates inputs", {
 })
 
 test_that("suggest_best_method works correctly", {
-  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
 
   # Invalid metric should error
@@ -85,7 +85,7 @@ test_that("suggest_best_method works correctly", {
 })
 
 test_that("plot_metrics errors on invalid metric", {
-  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
   expect_error(plot_metrics(res, "NotARealMetric"), "not found in data frame")
 })
@@ -101,7 +101,7 @@ test_that("evaluate_imputation works with simple numeric data", {
 })
 
 test_that("print and summary invisibility", {
-  file <- system.file("extdata", "synthetic_mixed_missing_dataset.csv", package = "imputetoolkit")
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
 
   expect_invisible(print(res$mean_mode))

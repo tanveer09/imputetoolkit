@@ -16,7 +16,7 @@ private:
   List metrics; // per-column metrics
   double rmse, mae, r2, corr, ks, acc;
 
-  // --- Helper: Kolmogorov-Smirnov test ---
+  // --- Kolmogorov-Smirnov (KS) test ---
   double ks_test(NumericVector x, NumericVector y) {
     NumericVector xs = clone(x).sort();
     NumericVector ys = clone(y).sort();
@@ -38,7 +38,7 @@ private:
     return d;
   }
 
-  // --- Helper: column metrics ---
+  // --- Column metrics ---
   NumericVector compute_column_metrics(NumericVector true_vals, NumericVector imputed_vals) {
     int n = true_vals.size();
     if (n != imputed_vals.size()) {
