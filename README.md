@@ -73,6 +73,291 @@ Together, these tests ensure **robustness, reproducibility, and informative erro
 
 ------------------------------------------------------------------------
 
+
+## Test Plan for Peer Review
+
+This section provides a detailed plan for testing the **imputetoolkit** package.  
+Follow the steps in order. Each step includes example commands and the expected outcome.  
+This plan can be used by peer reviewers to verify functionality and prepare their peer review report.
+
+---
+
+## 1. Environment Setup
+
+### 1. Install `remotes` (if not already installed):
+```r
+install.packages("remotes")
+```
+
+### 2. Install the package from GitHub:
+
+```r
+remotes::install_github("tanveer09/imputetoolkit@draft", build_vignettes = TRUE)
+```
+
+### 3. Load the package:
+
+``` r
+library(imputetoolkit)
+```
+
+**Expected outcome:** Package installs and loads without errors.
+
+### 4. Check vignette availability:
+
+``` r
+browseVignettes("imputetoolkit")
+```
+
+At least one vignette should be available, with a link to the HTML vignette page.
+
+---
+
+## 2. Dataset Access
+
+Load the sample dataset included in the package:
+
+``` r
+filename <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+
+raw_data <- read.csv(filename, stringsAsFactors = TRUE)
+
+head(raw_data)
+```
+**Expected outcome:** A dataframe with numeric and categorical variables, some containing missing values, as shown below.
+
+| age | income | score | height | color | city | education   | satisfaction | purchased |
+|-----|--------|-------|--------|-------|------|-------------|--------------|-----------|
+| 56  | 126091 | 51.19 | 166.1  | Red   | DAL  | High School | Neutral      | Yes       |
+| 69  | 81465  | 45.68 | 157.4  | Red   | DAL  | Bachelors   | Neutral      | No        |
+| 46  | 129500 | 52.75 | 182.1  | Green | LA   |             |              | Yes       |
+| 32  | 106436 | 35.13 | 171.4  | Green | DAL  | Bachelors   |              | No        |
+| 60  | 138422 | 51.58 | 171.4  | Red   | CHI  | PhD         | Satisfied    | No        |
+| 25  | 144124 | 52.26 | 163.7  | Blue  | NY   | High School |              | Yes       |
+
+---
+
+## 3. Evaluator Pipeline
+
+Run the evaluator, that evaluatues various imputing techniques on the dataset:
+
+``` r
+results <- evaluator(data = raw_data)
+names(results)
+```
+
+**Expected outcome:** results is a list with three elements:
+"mean_mode", "median_mode", "mice".
+
+---
+
+## 4. Inspect Individual Results
+
+### 4.1 print()
+```r
+print(results$mean_mode)
+```
+
+**Expected outcome:**  print(results) shows evaluation metrics (RMSE, MAE, R², Correlation, KS, Accuracy), as shown below.
+
+```
+$mean_mode
+Evaluation for method: Mean/Mode 
+Global Metrics:
+  RMSE       : 7556.136 
+  MAE        : 6543.196 
+  R^2        : -1.2422 
+  Correlation: NA 
+  KS         : 0.686 
+  Accuracy   : 0.0992 
+
+Per-column metrics available in x$metrics
+
+$median_mode
+Evaluation for method: Median/Mode 
+Global Metrics:
+  RMSE       : 7563.103 
+  MAE        : 6551.639 
+  R^2        : -1.2424 
+  Correlation: NA 
+  KS         : 0.6827 
+  Accuracy   : 0.1033 
+
+Per-column metrics available in x$metrics
+
+$mice
+Evaluation for method: MICE 
+Global Metrics:
+  RMSE       : 10920.34 
+  MAE        : 9001.991 
+  R^2        : -1.5667 
+  Correlation: -0.0465 
+  KS         : 0.2071 
+  Accuracy   : 0.1017 
+
+Per-column metrics available in x$metrics
+```
+
+### 4.2 summary()
+
+```r
+summary(results$mean_mode)
+```
+
+**Expected outcome:** summary() produces a detailed data.frame including per-column metrics and a GLOBAL row, as shown below:
+
+| Column       |      RMSE   |      MAE   |         R2   | Correlation |    KS    | Accuracy |
+|--------------|-------------|------------|--------------|-------------|----------|----------|
+| age          |   17.347819 | 14.787250  | -0.002598887 | NA          | 0.555556 | 0.000000 |
+| income       | 37756.906642| 32695.6686 | -0.008611725 | NA          | 0.556701 | 0.000000 |
+| color        |    3.364834 |  3.056842  | -4.724533105 | NA          | 1.000000 | 0.000000 |
+| education    |    1.663998 |  1.284444  | -1.474229534 | NA          | 0.707778 | 0.292222 |
+| satisfaction |    1.398599 |  1.182745  | -0.000987184 | NA          | 0.610196 | 0.203922 |
+| GLOBAL       | 7556.136378 | 6543.195967| -1.242192087 | NA          | 0.686046 | 0.099229 |
+
+
+print() executes invisibly (returns NULL), while summary() returns a data.frame.
+
+---
+
+## 5. Compare Methods
+### 5.1 print_metrics()
+
+``` r
+print_metrics(results)
+```
+
+**Expected outcome:** print_metrics() shows a comparison table of all metrics, as shown below:
+
+Table: Comparison of Imputation Methods
+
+| Method      |      RMSE |      MAE |      R2 | Correlation |    KS  | Accuracy |
+|:------------|----------:|---------:|--------:|------------:|-------:|---------:|
+| Mean/Mode   |   7556.136|  6543.196|  -1.2422|          NA  | 0.6860 |   0.0992 |
+| Median/Mode |   7563.103|  6551.639|  -1.2424|          NA  | 0.6827 |   0.1033 |
+| MICE        |  10920.341|  9001.991|  -1.5667|     -0.0465 | 0.2071 |   0.1017 |
+
+
+- plot_metrics("ALL") generates a facetted bar chart of metrics across methods.
+
+
+### 5.2 plot_metrics()
+
+``` r
+plot_metrics(results, "R2")
+```
+
+**Expected outcome:** plot_metrics("R2") generates a facetted bar chart of metrics across methods.
+
+*Output (saved plot):* ![R2 Comparison](inst/extdata/figures/plot_r2.png)
+
+plot_metrics("ALL") generates a facetted bar chart of metrics across methods.
+
+---
+
+## 6. Suggest Best Method
+
+``` r
+output <- suggest_best_method(results, "ALL")
+```
+
+**Expected outcome:** Text output suggesting the best method(s) depending on the metric.
+
+```
+Suggested best imputation methods across metrics:
+    As per R2, KS, RMSE, MAE metrics: Mean/Mode
+    As per Accuracy metrics: Median/Mode
+```
+
+The output object has the below data:
+
+```
+$`Mean/Mode`
+[1] "R2"   "KS"   "RMSE" "MAE" 
+
+$`Median/Mode`
+[1] "Accuracy"
+```
+
+We can also ask it to suggest the best method based on a specific metric by passing the metric name. For example, to know which imputation method performed the best based on Accuracy, we can run the commnad as below:
+
+``` r
+output <- suggest_best_method(results, "Accuracy")
+```
+
+**Expected outcome:** Text output suggesting the best method(s) based on Accuracy metric.
+
+```
+Suggested best imputation method based on Accuracy: Median/Mode
+```
+
+---
+
+## 7. Vignette Validation
+
+``` r
+browseVignettes("imputetoolkit")
+```
+
+**Expected outcome:**
+
+The vignette opens in a browser, compiles without errors, and demonstrates usage of the package.
+
+---
+
+## 8. Error Handling (Basic)
+
+
+```r
+# Missing arguments
+try(evaluator(), silent = TRUE)
+
+# Invalid file path
+try(evaluator(filename = "fake.csv"), silent = TRUE)
+```
+
+**Expected outcome:**
+
+- Missing arguments: error “Please provide either a filename or a data.frame.”
+
+- Invalid file path: error indicating missing file.
+```
+Warning message:
+In file(file, "rt") :
+  cannot open file 'fake.csv': No such file or directory
+```
+---
+
+## 9. Reproducibility Check
+
+```r
+set.seed(123); res1 <- evaluator(data = raw_data)
+set.seed(123); res2 <- evaluator(data = raw_data)
+identical(res1, res2)
+```
+
+**Expected outcome:**
+
+TRUE (results are reproducible, especially for MICE).
+
+--- 
+
+## 10. Run Unit Tests
+
+``` r
+library(testthat)
+test_package("imputetoolkit")
+```
+
+**Expected outcome:**
+
+All included tests pass without failure.
+
+```
+[ FAIL 0 | WARN 1 | SKIP 0 | PASS 42 ]
+```
+
+------------------------------------------------------------------------
 ## Installation
 
 Make sure you have R (≥ 4.0) and the **devtools/remotes** package:
@@ -280,8 +565,6 @@ Covers:
 
 - Suggesting the best method
 
--   HTML docs: pkgdown site at <https://tanveer09.github.io/imputetoolkit/>
-
 ------------------------------------------------------------------------
 
 ## Development Notes
@@ -296,4 +579,3 @@ Covers:
 
 This package is released under the [MIT License](LICENSE).
 
-------------------------------------------------------------------------
