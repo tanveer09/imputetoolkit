@@ -14,44 +14,54 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, include = FALSE}
+# --- Disable vignette examples automatically if sample data is missing ---
+file_path <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+if (!nzchar(file_path) || !file.exists(file_path)) {
+  warning("Sample dataset not found. Code chunks will not be evaluated.")
+  knitr::opts_chunk$set(eval = FALSE)
+}
+```
+
+```{r load}
 library(imputetoolkit)
 ```
 
 ## Introduction
 
-Missing data is one of the most common and challenging problems in data science and applied statistics. Whether it arises from **instrument failure**, **data entry errors**, **survey non-response**, or **dropouts in longitudinal studies**, missingness can introduce serious bias, reduce statistical power, and complicate downstream modelling.  
+Missing data is one of the most common and challenging problems in data science and applied statistics.
+Whether it arises from **instrument failure**, **data entry errors**, **survey non-response**, or **dropouts in longitudinal studies**,
+missingness can introduce bias, reduce statistical power, and complicate downstream modelling.
 
-Traditional strategies like **listwise deletion** (dropping rows with missing values) are simple but often waste valuable information and lead to distorted conclusions. A better approach is to use **imputation methods**, which fill in the missing values with plausible substitutes. However, no single method works best in all situations:  
+Traditional strategies like **listwise deletion** (dropping rows with missing values) are simple but waste information.
+A better approach is to use **imputation methods**, which fill in the missing values with plausible substitutes.
 
-- **Mean / Median imputation** provides quick baselines but may distort variance.  
-- **Mode imputation** works for categorical variables but ignores uncertainty.  
-- **MICE (Multiple Imputation by Chained Equations)** models relationships across variables but is computationally heavier.  
-- **Advanced methods** such as kNN or missForest can capture complex dependencies but may require tuning and more resources.  
+However, no single method works best in all situations:
 
-For practitioners, the key challenge is not just *how* to impute, but **how to compare methods and justify the choice**. This is where **imputetoolkit** comes in.  
+* **Mean / Median imputation** provides quick baselines but may distort variance.
+* **Mode imputation** works for categorical variables but ignores uncertainty.
+* **MICE (Multiple Imputation by Chained Equations)** models relationships across variables but is computationally heavier.
+* **Advanced methods** such as *kNN* or *missForest* can capture complex dependencies but may require tuning and more resources.
 
-The **imputetoolkit** R package provides a **unified framework** for:  
-- Automatically **injecting controlled missingness** into a dataset for benchmarking.  
-- Applying multiple **imputation methods** consistently (currently Mean/Mode, Median/Mode, and MICE, with future support for kNN and missForest).  
-- Computing **evaluation metrics** (RMSE, MAE, R², correlation, KS statistic, accuracy) through a fast Rcpp backend.  
-- Producing **visual comparisons** across methods to support transparent decision-making.  
+The key challenge is not just *how* to impute, but **how to compare methods and justify the choice**.
+This is where **imputetoolkit** comes in.
 
-The goal is to help users answer:  
+---
 
-- *“Which imputation method performs best on my dataset?”*  
-- *“How do different methods affect the relationships in my data?”*  
-- *“Can I justify the choice of method with quantitative evidence?”*  
+## Overview of imputetoolkit
 
-This vignette will walk you through the package step by step:  
+The **imputetoolkit** R package provides a unified framework for:
 
-1. **Loading data and running the evaluator pipeline**.  
-2. **Inspecting results** using `print()` and `summary()`.  
-3. **Comparing methods** through tables and plots.  
-4. **Automatically suggesting the best method** for your data.  
-5. **Visualising performance** across multiple metrics.  
+* Automatically **injecting controlled missingness** into a dataset for benchmarking.
+* Applying multiple **imputation methods** consistently (Mean/Mode, Median/Mode, MICE, and kNN).
+* Computing **evaluation metrics** (RMSE, MAE, R², Correlation, KS statistic, Accuracy) via a fast Rcpp backend.
+* Producing **visual comparisons** and **automatic method recommendations**.
 
-By the end, you will be able to **confidently evaluate, compare, and select imputation methods** for your own projects.  
+It helps users answer questions like:
+
+* “Which imputation method performs best on my dataset?”
+* “How do different methods affect variable relationships?”
+* “Can I justify the choice with quantitative evidence?”
 
 ---
 
@@ -59,21 +69,21 @@ By the end, you will be able to **confidently evaluate, compare, and select impu
 
 The main function is:
 
-* `evaluator()`: Load data → Inject missingness → Apply imputation methods (Mean/Mode, Median/Mode, MICE) → Evaluate results.
+* `evaluator()` — Load data → Inject missingness → Apply imputation methods → Evaluate results.
 
 Supporting utilities include:
 
-* `print()` / `summary()` – show evaluation metrics
-* `print_metrics()` – tabular comparison across methods
-* `plot_metrics()` – visualise method performance
-* `suggest_best_method()` – recommend the optimal method
-* `evaluate_results()` – wrapper combining print, plot, and best-method suggestion
+* `print()` / `summary()` – Display evaluation metrics
+* `print_metrics()` – Tabular comparison across methods
+* `plot_metrics()` – Visual comparison of performance
+* `suggest_best_method()` – Recommend optimal method
+* `evaluate_results()` – Combined summary, plot, and best-method suggestion
 
 ---
 
-## Example 1: Using Built-in Dataset
+## Example 1 – Using the Built-in Dataset
 
-```{r}
+```{r, eval = FALSE}
 # Locate the sample dataset shipped with the package
 file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
 raw_data <- read.csv(file, stringsAsFactors = TRUE)
@@ -84,33 +94,33 @@ res <- evaluator(data = raw_data)
 
 ### Print Results for One Method
 
-```{r}
+```{r, eval = FALSE}
 print(res$mean_mode)
 ```
 
 ### Summarise Per-Column Metrics
 
-```{r}
+```{r, eval = FALSE}
 summary(res$mean_mode)
 ```
 
 ### Compare Methods (Tabular)
 
-```{r}
+```{r, eval = FALSE}
 print_metrics(res)
 ```
 
 ### Compare Methods (Visual)
 
-```{r fig.width=7, fig.height=5}
+```{r, eval = FALSE, fig.width=7, fig.height=5}
 plot_metrics(res, "ALL")
 ```
 
 ---
 
-## Example 2: Suggest Best Method
+## Example 2 – Suggest the Best Method
 
-```{r}
+```{r, eval = FALSE}
 # Suggest based on a single metric
 suggest_best_method(res, "RMSE")
 
@@ -120,8 +130,19 @@ suggest_best_method(res, "ALL")
 
 ---
 
-## Example 3: Full Evaluation in One Call
+## Example 3 – Full Evaluation in One Call
 
-```{r}
+```{r, eval = FALSE}
 evaluate_results(res, metric = "RMSE")
 ```
+
+---
+
+## Conclusion
+
+The **imputetoolkit** package simplifies the evaluation and comparison of missing-data imputation methods.
+With consistent interfaces, reproducible metrics, and visual insights, it helps analysts select
+the most appropriate imputation strategy for their data — balancing simplicity, accuracy, and interpretability.
+
+---
+

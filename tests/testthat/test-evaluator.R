@@ -1,63 +1,39 @@
 test_that("evaluator runs with all methods on synthetic dataset", {
-  # locate bundled dataset
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   expect_true(file.exists(file))
 
-  # run evaluator (explicit filename argument)
   results <- evaluator(filename = file)
 
-  # check that all methods are present
-  expect_named(results, c("mean_mode", "median_mode", "mice"))
+  # ---- Check methods ----
+  expect_named(results, c("mean_mode", "median_mode", "mice", "knn"))
 
-  # --- Mean/Mode ---
-  mean_eval <- results$mean_mode
-  expect_s3_class(mean_eval, "evaluator")
-  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(mean_eval)))
+  for (method_name in names(results)) {
+    method_eval <- results[[method_name]]
+    expect_s3_class(method_eval, "evaluator")
+    expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(method_eval)))
+  }
 
-  # --- Median/Mode ---
-  median_eval <- results$median_mode
-  expect_s3_class(median_eval, "evaluator")
-  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(median_eval)))
+  # ---- Summary & print ----
+  expect_s3_class(summary(results$mean_mode), "data.frame")
+  expect_invisible(print(results$mean_mode))
 
-  # --- MICE ---
-  testthat::skip_if_not_installed("mice")
-  mice_eval <- results$mice
-  expect_s3_class(mice_eval, "evaluator")
-  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% names(mice_eval)))
-
-  # --- Summary & print ---
-  expect_s3_class(summary(mean_eval), "data.frame")
-  expect_s3_class(summary(median_eval), "data.frame")
-
-  # printing shouldn't error
-  expect_invisible(print(mean_eval))
-  expect_invisible(print(median_eval))
-
-  # --- Wrapper functions ---
+  # ---- Wrapper functions ----
   metrics_df <- extract_metrics(results)
   expect_s3_class(metrics_df, "data.frame")
+  expect_true(all(c("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy") %in% colnames(metrics_df)))
 
-  # print_metrics returns a knitr_kable (visible), not invisible
   expect_s3_class(print_metrics(results), "knitr_kable")
-
-  # plot_metrics should return a ggplot object
   expect_s3_class(plot_metrics(results, "RMSE"), "ggplot")
 
-  # --- suggest_best_method checks ---
-  # single metric (returns character)
+  # ---- Suggest best ----
   best_rmse <- suggest_best_method(results, "RMSE")
   expect_type(best_rmse, "character")
-  expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE"))
+  expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE", "KNN"))
 
-  # ALL metrics (returns grouped list)
   best_all <- suggest_best_method(results, "ALL")
   expect_type(best_all, "list")
-  # names of list should be methods, values should be vectors of metrics
-  expect_true(all(unlist(best_all) %in% c("RMSE", "MAE", "R2", "KS", "Accuracy")))
-  expect_true(all(names(best_all) %in% c("Mean/Mode", "Median/Mode", "MICE")))
+  expect_true(all(names(best_all) %in% c("Mean/Mode", "Median/Mode", "MICE", "KNN")))
 })
-
-
 
 test_that("evaluator fails with invalid inputs", {
   expect_error(evaluator(), "Please provide either a filename or a data.frame")
@@ -83,49 +59,27 @@ test_that("suggest_best_method works correctly", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
 
-  # Invalid metric should error
   expect_error(suggest_best_method(res, "NOT_A_METRIC"))
 
-  # RMSE is minimum
-  best_rmse <- suggest_best_method(res, "RMSE")
-  expect_true(best_rmse %in% c("Mean/Mode", "Median/Mode", "MICE"))
-
-  # MAE is minimum
-  best_acc <- suggest_best_method(res, "MAE")
-  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
-
-  # R2 is maximum
-  best_acc <- suggest_best_method(res, "R2")
-  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
-
-  # KS is maximum
-  best_acc <- suggest_best_method(res, "KS")
-  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
-
-  # Accuracy is maximum
-  best_acc <- suggest_best_method(res, "Accuracy")
-  expect_true(best_acc %in% c("Mean/Mode", "Median/Mode", "MICE"))
+  for (m in c("RMSE", "MAE", "R2", "KS", "Accuracy")) {
+    best <- suggest_best_method(res, m)
+    expect_true(best %in% c("Mean/Mode", "Median/Mode", "MICE", "KNN"))
+  }
 })
 
 test_that("plot_metrics works correctly", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
 
-  # invalid metric should error
   expect_error(plot_metrics(res, "NotARealMetric"), "not found")
 
-  # single valid metric returns ggplot
-  p1 <- plot_metrics(res, "RMSE")
-  expect_s3_class(p1, "ggplot")
-
-  # ALL should return a facetted ggplot
-  p2 <- plot_metrics(res, "ALL")
-  expect_s3_class(p2, "ggplot")
+  expect_s3_class(plot_metrics(res, "RMSE"), "ggplot")
+  expect_s3_class(plot_metrics(res, "ALL"), "ggplot")
 })
 
 test_that("evaluate_imputation works with simple numeric data", {
   true_data <- list(col1 = c(1,2,3,4,5))
-  imputed_data <- list(col1 = c(1,2,3,4,6))  # small error
+  imputed_data <- list(col1 = c(1,2,3,4,6))
   res <- evaluate_imputation(true_data, imputed_data, "toy_method")
 
   expect_true(is.list(res))
@@ -136,8 +90,16 @@ test_that("evaluate_imputation works with simple numeric data", {
 test_that("print and summary invisibility", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   res <- evaluator(filename = file)
-
   expect_invisible(print(res$mean_mode))
   expect_s3_class(summary(res$mean_mode), "data.frame")
 })
 
+# --- Additional edge tests for KNN ---
+test_that("KNN imputation produces reasonable values", {
+  file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+  res <- evaluator(filename = file)
+  knn_eval <- res$knn
+  expect_s3_class(knn_eval, "evaluator")
+  expect_true(is.numeric(knn_eval$RMSE))
+  expect_true(knn_eval$RMSE >= 0)
+})

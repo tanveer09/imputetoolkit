@@ -21,7 +21,7 @@ If "ALL", returns a named list showing the metrics associated with each best met
 Suggest the best imputation method
 }
 \seealso{
-\link[vignette]{imputetoolkit}
+vignette("imputetoolkit")
 For a complete tutorial, see the package vignette:
 \code{vignette("imputetoolkit")}
 }

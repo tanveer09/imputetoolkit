@@ -56,20 +56,20 @@ private:
       abs_err += std::abs(diff);
       ss_res += diff * diff;
       ss_tot += (true_vals[i] - mean_true) * (true_vals[i] - mean_true);
-
       if (true_vals[i] == imputed_vals[i]) correct_count++;
     }
 
     double col_rmse = std::sqrt(se / n);
-    double col_mae = abs_err / n;
-    double col_r2 = (ss_tot == 0) ? NA_REAL : 1.0 - (ss_res / ss_tot);
+    double col_mae  = abs_err / n;
+    double col_r2   = (ss_tot == 0) ? NA_REAL : 1.0 - (ss_res / ss_tot);
 
-    // Correlation
-    double col_corr = NA_REAL;
+    // --- Correlation (safe version) ---
+    double col_corr = 0.0; // default 0
     {
       double mean_x = mean(true_vals);
       double mean_y = mean(imputed_vals);
       double num = 0.0, den_x = 0.0, den_y = 0.0;
+
       for (int i = 0; i < n; i++) {
         double dx = true_vals[i] - mean_x;
         double dy = imputed_vals[i] - mean_y;
@@ -77,12 +77,16 @@ private:
         den_x += dx * dx;
         den_y += dy * dy;
       }
+
+      // Only compute correlation if both variances > 0
       if (den_x > 0 && den_y > 0) {
         col_corr = num / std::sqrt(den_x * den_y);
+      } else {
+        col_corr = 0.0; // if constant column, correlation = 0
       }
     }
 
-    double col_ks = ks_test(true_vals, imputed_vals);
+    double col_ks  = ks_test(true_vals, imputed_vals);
     double col_acc = (double) correct_count / n;
 
     return NumericVector::create(
@@ -95,7 +99,9 @@ private:
     );
   }
 
-  // --- Compute metrics for all columns ---
+
+
+  //--- Compute metrics for all columns ---
   void compute_all_metrics() {
     CharacterVector cols = true_data.names();
     int p = cols.size();
@@ -118,17 +124,34 @@ private:
       acc_vals[i] = res["Accuracy"];
     }
 
-    rmse = mean(rmse_vals);
-    mae = mean(mae_vals);
-    r2 = mean(r2_vals);
-    corr = mean(corr_vals);
-    ks = mean(ks_vals);
-    acc = mean(acc_vals);
+    // --- helper that returns a double and skips NAs ---
+    auto safe_mean = [](const NumericVector& v) -> double {
+      int n = v.size();
+      int cnt = 0;
+      double sum = 0.0;
+
+      for (int i = 0; i < n; i++) {
+        if (!NumericVector::is_na(v[i])) {
+          sum += v[i];
+          cnt++;
+        }
+      }
+      if (cnt == 0) return NA_REAL;
+      return sum / cnt;
+    };
+
+    // Use the NA-skipping mean for the global metrics
+    rmse = safe_mean(rmse_vals);
+    mae  = safe_mean(mae_vals);
+    r2   = safe_mean(r2_vals);
+    corr = safe_mean(corr_vals);
+    ks   = safe_mean(ks_vals);
+    acc  = safe_mean(acc_vals);
   }
 
 public:
   Evaluator(List true_data_, List imputed_data_, std::string method_)
-    : true_data(true_data_), imputed_data(imputed_data_), method(method_) {
+    : true_data(true_data_), imputed_data(imputed_data_), method(method_), metrics(List::create()) {
     compute_all_metrics();
   }
 

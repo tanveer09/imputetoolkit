@@ -16,7 +16,7 @@ Prints the metrics in a clean table format
 Print evaluation metrics for imputation methods
 }
 \seealso{
-\link[vignette]{imputetoolkit}
+vignette("imputetoolkit")
 For a complete tutorial, see the package vignette:
 \code{vignette("imputetoolkit")}
 }

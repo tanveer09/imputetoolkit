@@ -15,7 +15,7 @@
 Summary method for evaluator objects
 }
 \seealso{
-\link[vignette]{imputetoolkit}
+vignette("imputetoolkit")
 For a complete tutorial, see the package vignette:
 \code{vignette("imputetoolkit")}
 }
