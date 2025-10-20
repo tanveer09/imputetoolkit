@@ -9,16 +9,11 @@ plot_metrics(x, metric = "RMSE")
 \arguments{
 \item{x}{A result list returned by evaluator()}
 
-\item{metric}{Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL")}
+\item{metric}{Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "Accuracy", "F1", "ALL")}
 }
 \value{
-A ggplot object
+A ggplot2 object
 }
 \description{
-Plot evaluation metrics
-}
-\seealso{
-vignette("imputetoolkit")
-For a complete tutorial, see the package vignette:
-\code{vignette("imputetoolkit")}
+Plot evaluation metrics (numeric + categorical)
 }

@@ -5,19 +5,12 @@
 \title{Plot density comparisons of true vs imputed values for one column}
 \usage{
 plot_density_per_column(eval_list, col_name)
-
-plot_density_per_column(eval_list, col_name)
 }
 \arguments{
 \item{eval_list}{Output of get_eval_list(res)}
 
 \item{col_name}{Column to plot}
 }
-\value{
-A ggplot2 object showing density overlays of true vs imputed data
-}
 \description{
-Plot density comparisons of true vs imputed values for one column
-
 Plot density comparisons of true vs imputed values for one column
 }

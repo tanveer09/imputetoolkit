@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
-# --- Disable vignette examples automatically if sample data is missing ---
+# Disable vignette examples if the sample dataset is not found
 file_path <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
 if (!nzchar(file_path) || !file.exists(file_path)) {
   warning("Sample dataset not found. Code chunks will not be evaluated.")
@@ -27,122 +27,260 @@ if (!nzchar(file_path) || !file.exists(file_path)) {
 library(imputetoolkit)
 ```
 
-## Introduction
+---
 
-Missing data is one of the most common and challenging problems in data science and applied statistics.
-Whether it arises from **instrument failure**, **data entry errors**, **survey non-response**, or **dropouts in longitudinal studies**,
-missingness can introduce bias, reduce statistical power, and complicate downstream modelling.
+# Introduction
 
-Traditional strategies like **listwise deletion** (dropping rows with missing values) are simple but waste information.
-A better approach is to use **imputation methods**, which fill in the missing values with plausible substitutes.
+Handling **missing data** is one of the most common and crucial challenges in data science.
+Whether caused by *sensor errors*, *survey non-responses*, or *data-entry mistakes*, missingness can bias results and reduce model accuracy.
 
-However, no single method works best in all situations:
+Simple strategies like **listwise deletion** often waste valuable data.
+More robust approaches involve **imputation** — replacing missing values with reasonable estimates.
 
-* **Mean / Median imputation** provides quick baselines but may distort variance.
-* **Mode imputation** works for categorical variables but ignores uncertainty.
-* **MICE (Multiple Imputation by Chained Equations)** models relationships across variables but is computationally heavier.
-* **Advanced methods** such as *kNN* or *missForest* can capture complex dependencies but may require tuning and more resources.
-
-The key challenge is not just *how* to impute, but **how to compare methods and justify the choice**.
-This is where **imputetoolkit** comes in.
+However, no single imputation method is universally best.
+The **`imputetoolkit`** package helps you **compare, evaluate, and visualize** different methods consistently.
 
 ---
 
-## Overview of imputetoolkit
+# What the Package Does
 
-The **imputetoolkit** R package provides a unified framework for:
+`imputetoolkit` provides a full benchmarking pipeline for missing-data methods:
 
-* Automatically **injecting controlled missingness** into a dataset for benchmarking.
-* Applying multiple **imputation methods** consistently (Mean/Mode, Median/Mode, MICE, and kNN).
-* Computing **evaluation metrics** (RMSE, MAE, R², Correlation, KS statistic, Accuracy) via a fast Rcpp backend.
-* Producing **visual comparisons** and **automatic method recommendations**.
+- Injects controlled missingness into data
+- Applies multiple imputation methods:
 
-It helps users answer questions like:
+* Mean/Mode (with skewness-aware log transform)
+* Median/Mode
+* MICE (Predictive Mean Matching)
+* KNN (parallel mixed-type imputation)
 
-* “Which imputation method performs best on my dataset?”
-* “How do different methods affect variable relationships?”
-* “Can I justify the choice with quantitative evidence?”
+- Evaluates each method using Rcpp-optimized metrics:
 
----
+* RMSE, MAE, R², Correlation, KS statistic, and Accuracy
 
-## Workflow Overview
-
-The main function is:
-
-* `evaluator()` — Load data → Inject missingness → Apply imputation methods → Evaluate results.
-
-Supporting utilities include:
-
-* `print()` / `summary()` – Display evaluation metrics
-* `print_metrics()` – Tabular comparison across methods
-* `plot_metrics()` – Visual comparison of performance
-* `suggest_best_method()` – Recommend optimal method
-* `evaluate_results()` – Combined summary, plot, and best-method suggestion
+- Scales numeric data per-column using **min–max scaling**
+- Provides plots and summary tables for easy comparison
 
 ---
 
-## Example 1 – Using the Built-in Dataset
+# Typical Workflow
 
-```{r, eval = FALSE}
-# Locate the sample dataset shipped with the package
+The **main entry point** is the `evaluator()` function:
+
+```r
+res <- evaluator(filename = "path/to/data.csv")
+```
+
+Internally, it performs:
+
+1. Load or receive the data frame.
+2. Identify and inject additional missingness.
+3. Compute min–max values for scaling numeric columns.
+4. Impute using Mean/Mode, Median/Mode, MICE, and KNN.
+5. Evaluate each method with global and per-column metrics.
+6. Return a structured list of `evaluator` objects.
+
+---
+
+# Example 1 – Quick Start
+
+```{r, eval=FALSE}
+# Load the built-in dataset
 file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
 raw_data <- read.csv(file, stringsAsFactors = TRUE)
 
-# Run evaluator
+# Run the evaluator
 res <- evaluator(data = raw_data)
 ```
 
-### Print Results for One Method
+### View Metrics for One Method
 
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 print(res$mean_mode)
 ```
 
-### Summarise Per-Column Metrics
+### Detailed Per-Column Summary
 
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 summary(res$mean_mode)
 ```
 
-### Compare Methods (Tabular)
+### Compare All Methods (Table)
 
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 print_metrics(res)
 ```
 
-### Compare Methods (Visual)
+### Compare All Methods (Plot)
 
-```{r, eval = FALSE, fig.width=7, fig.height=5}
+```{r, eval=FALSE, fig.width=7, fig.height=5}
 plot_metrics(res, "ALL")
 ```
 
 ---
 
-## Example 2 – Suggest the Best Method
+# Example 2 – KNN and Log-Transform Aware Mean Imputation
 
-```{r, eval = FALSE}
-# Suggest based on a single metric
+The new version introduces:
+
+* **KNN imputation** using `FNN` + parallelism via `foreach` and `doParallel`.
+* **Log-based mean imputation** for highly skewed numeric features.
+
+You can monitor KNN progress in the console:
+
+```
+Running mixed-type parallel KNN imputation using FNN...
+Using 8 cores for KNN imputation...
+Parallel mixed-type KNN imputation complete (parallel).
+```
+
+Each method’s results are stored as:
+
+* `res$mean_mode`
+* `res$median_mode`
+* `res$mice`
+* `res$knn`
+
+All share the same structure and S3 class `"evaluator"`.
+
+---
+
+# Example 3 – Suggesting the Best Method
+
+```{r, eval=FALSE}
+# Suggest best based on one metric
 suggest_best_method(res, "RMSE")
 
 # Suggest across all metrics
 suggest_best_method(res, "ALL")
 ```
 
----
+Example output:
 
-## Example 3 – Full Evaluation in One Call
-
-```{r, eval = FALSE}
-evaluate_results(res, metric = "RMSE")
+```
+Suggested best imputation methods across metrics:
+    As per RMSE, MAE: KNN
+    As per R2, KS, Accuracy: MICE
 ```
 
 ---
 
-## Conclusion
+# Example 4 – Visualizing Density Comparisons
 
-The **imputetoolkit** package simplifies the evaluation and comparison of missing-data imputation methods.
-With consistent interfaces, reproducible metrics, and visual insights, it helps analysts select
-the most appropriate imputation strategy for their data — balancing simplicity, accuracy, and interpretability.
+After imputation, you can visualize the distributional agreement between **true** and **imputed** values.
+
+```{r, eval=FALSE}
+# Extract evaluation lists
+eval_list <- get_eval_list(res)
+
+# Plot for a specific numeric column
+plot_density_per_column(eval_list, "age")
+
+# Combined density plots for all columns × methods
+plot_density_all(eval_list)
+```
+
+These plots make it easy to see whether imputed values preserve each variable’s shape and spread.
 
 ---
 
+# Example 5 – Full Automated Report
+
+The helper `evaluate_results()` runs the whole analysis:
+
+```{r, eval=FALSE}
+evaluate_results(res, metric = "RMSE")
+```
+
+This function:
+
+1. Prints a metrics table (`print_metrics()`)
+2. Displays bar plots of results (`plot_metrics()`)
+3. Recommends the best method (`suggest_best_method()`)
+
+---
+
+# Evaluation Metrics
+
+| Metric          | Meaning                                                | Higher/Lower Better |
+| :-------------- | :----------------------------------------------------- | :-----------------: |
+| **RMSE**        | Root Mean Squared Error between true & imputed values  |          ↓          |
+| **MAE**         | Mean Absolute Error                                    |          ↓          |
+| **R²**          | Proportion of variance explained                       |          ↑          |
+| **Correlation** | Pearson correlation between true & imputed             |          ↑          |
+| **KS**          | Kolmogorov–Smirnov statistic (distribution similarity) |          ↑          |
+| **Accuracy**    | % of exact matches (categorical)                       |          ↑          |
+
+---
+
+# Example 6 – Custom Datasets
+
+You can pass any data frame directly:
+
+```{r, eval=FALSE}
+df <- read.csv("custom_data.csv")
+res <- evaluator(data = df)
+```
+
+Or use any file type supported by the package (`.csv`, `.tsv`, `.xlsx`, `.rds`).
+
+---
+
+# Behind the Scenes
+
+### Parallelized KNN
+
+* Uses `FNN::get.knnx()` for nearest-neighbor search.
+* Runs in parallel (`doParallel`) for speed.
+* Handles both numeric and categorical variables separately.
+
+### Skewness-Aware Mean
+
+* Uses `e1071::skewness()` to detect skewness.
+* If |skewness| > 1, applies **log-transform + geometric mean**.
+* Back-transforms to preserve scale.
+
+### Scaled Evaluation
+
+* Numeric columns are scaled to [0, 1] using stored min–max values.
+* Ensures fair metric comparison across features.
+
+---
+
+# Summary
+
+The `imputetoolkit` package automates **end-to-end benchmarking** of imputation strategies.
+It’s ideal for teaching, exploratory data analysis, and reproducible research.
+
+✔ Unified API for multiple imputation methods
+✔ Rcpp-accelerated evaluation metrics
+✔ Parallel KNN support
+✔ Density visualization for true vs imputed
+✔ Automatic method suggestion
+
+---
+
+# Further Reading
+
+For detailed examples:
+
+```r
+vignette("imputetoolkit")
+```
+
+or explore the GitHub repository for:
+
+* Additional sample datasets
+* Unit tests (`testthat/`)
+* The tester project demonstrating complete end-to-end runs
+
+---
+
+# Citation
+
+If you use this package, please cite:
+
+> Singh, Tanveer. (2025). *imputetoolkit: An R Package for Evaluating Missing Data Imputation Methods*.
+> Victoria University of Wellington.
+
+---

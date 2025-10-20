@@ -22,6 +22,7 @@
 #' @importFrom parallel makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom stats complete.cases
+#' @importFrom stats sd
 
 #'
 #' @examples
@@ -185,40 +186,32 @@ evaluator <- function(data = NULL, filename = NULL) {
 
 
   ##############################################
-  # ---- KNN Imputation ---- #
+  # ---- KNN Imputation (robust version) ---- #
   ##############################################
   message("Running mixed-type parallel KNN imputation using FNN...")
 
-  if (!requireNamespace("FNN", quietly = TRUE)) {
+  if (!requireNamespace("FNN", quietly = TRUE))
     stop("Package 'FNN' required for fast KNN imputation. Please install it.")
-  }
-  if (!requireNamespace("doParallel", quietly = TRUE)) {
+  if (!requireNamespace("doParallel", quietly = TRUE))
     stop("Package 'doParallel' required for parallel execution. Please install it.")
-  }
-  if (!requireNamespace("foreach", quietly = TRUE)) stop("Package 'foreach' required.")
+  if (!requireNamespace("foreach", quietly = TRUE))
+    stop("Package 'foreach' required.")
 
   data_knn <- raw_data_modified
 
-  # Separate numeric and categorical columns
   num_cols <- names(which(sapply(data_knn, is.numeric)))
   cat_cols <- names(which(!sapply(data_knn, is.numeric)))
 
-  # Standardize numeric data
+  # --- Standardize numeric data safely ---
   num_data <- data_knn[, num_cols, drop = FALSE]
   num_data_scaled <- scale(num_data)
-
-  # Prepare predictor matrix (numeric only)
   pred_data <- as.data.frame(num_data_scaled)
 
-  # ---- Setup parallel backend safely ----
+  # --- Setup parallel backend (safe) ---
   total_cores <- parallel::detectCores(logical = TRUE)
-
-  # detect if under R CMD check / testthat
   is_check_env <- isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_", "FALSE"))) ||
     ("CHECK" %in% toupper(names(Sys.getenv()))) ||
     ("TESTTHAT" %in% toupper(names(Sys.getenv())))
-
-  # Use 1 core inside check/test environments to avoid socket issues
   cores <- if (is_check_env) 1 else max(1, total_cores - 1)
 
   if (cores > 1) {
@@ -230,6 +223,16 @@ evaluator <- function(data = NULL, filename = NULL) {
     message("Using sequential mode for KNN imputation (testing environment)...")
   }
 
+  safe_knn <- function(train_x, test_x, k = 3) {
+    if (nrow(train_x) == 0 || nrow(test_x) == 0)
+      return(list(nn.index = matrix(integer(0), nrow = 0, ncol = k)))
+    tryCatch(
+      FNN::get.knnx(train_x, test_x, k = k),
+      error = function(e) list(nn.index = matrix(integer(0), nrow = 0, ncol = k))
+    )
+  }
+
+  # ---- Impute numeric columns ----
   # ---- Impute numeric columns ----
   imputed_numeric <- foreach::foreach(col = num_cols, .packages = "FNN") %dopar% {
     col_data <- num_data_scaled[, col]
@@ -241,32 +244,71 @@ evaluator <- function(data = NULL, filename = NULL) {
 
     train_idx <- which(!is.na(col_data) & complete.cases(pred_data[, pred_cols, drop = FALSE]))
     test_idx  <- which(is.na(col_data) & complete.cases(pred_data[, pred_cols, drop = FALSE]))
-
     if (length(train_idx) == 0 || length(test_idx) == 0) return(col_data)
 
     train_x <- pred_data[train_idx, pred_cols, drop = FALSE]
-    test_x  <- pred_data[test_idx, pred_cols, drop = FALSE]
+    test_x  <- pred_data[test_idx,  pred_cols, drop = FALSE]
 
-    # Find nearest neighbors
-    knn_res <- FNN::get.knnx(train_x, test_x, k = 3)
+    # Skip if predictors have zero variance
+    if (any(apply(train_x, 2, stats::sd, na.rm = TRUE) == 0)) return(col_data)
 
-    # Impute by mean of neighbor values
+    knn_res <- safe_knn(train_x, test_x, k = 3)
+    if (nrow(knn_res$nn.index) == 0) return(col_data)
+
     imp_vals <- vapply(seq_len(nrow(knn_res$nn.index)), function(i) {
       neighbor_idx <- knn_res$nn.index[i, ]
       mean(col_data[train_idx[neighbor_idx]], na.rm = TRUE)
     }, numeric(1))
 
+    # replace only missing entries
     col_data[test_idx] <- imp_vals
-    col_data
+    return(col_data)
   }
+
+  # ---- Reconstruct numeric data from scaled form ----
+  if (length(num_cols) > 0 && length(imputed_numeric) > 0) {
+    # Convert back to a named data.frame to avoid lost column names
+    num_data_scaled_df <- as.data.frame(num_data_scaled)
+    for (i in seq_along(num_cols)) {
+      colname <- num_cols[i]
+      vec <- imputed_numeric[[i]]
+      if (!is.null(vec)) {
+        # replace column values directly even if some NAs remain
+        num_data_scaled_df[[colname]] <- vec
+      }
+    }
+
+    # Retrieve center/scale attributes
+    attr_center <- attr(num_data_scaled, "scaled:center")
+    attr_scale  <- attr(num_data_scaled, "scaled:scale")
+
+    # Reverse scaling correctly (column-by-column)
+    num_data_imputed <- as.data.frame(lapply(seq_along(num_cols), function(i) {
+      colname <- num_cols[i]
+      v <- num_data_scaled_df[[colname]]
+      sc <- attr_scale[colname]
+      ct <- attr_center[colname]
+      if (is.null(sc) || is.na(sc) || sc == 0) return(v)
+      return(v * sc + ct)
+    }))
+    names(num_data_imputed) <- num_cols
+
+    # Write back to main data
+    for (colname in num_cols) {
+      data_knn[[colname]] <- num_data_imputed[[colname]]
+    }
+  }
+
+  cat("\n[DEBUG] KNN numeric NAs before:", sum(is.na(raw_data_modified[num_cols])),
+      "after:", sum(is.na(data_knn[num_cols])), "\n")
+
 
   # ---- Impute categorical columns ----
   imputed_categorical <- foreach::foreach(col = cat_cols, .packages = "FNN") %dopar% {
     col_data <- data_knn[[col]]
     na_idx <- which(is.na(col_data))
-    if (length(na_idx) == 0) return(as.character(col_data))  # Always return character
+    if (length(na_idx) == 0) return(as.character(col_data))
 
-    # Use numeric predictors for neighbor search
     if (length(num_cols) == 0) return(as.character(col_data))
 
     train_idx <- which(!is.na(col_data) & complete.cases(pred_data))
@@ -275,12 +317,13 @@ evaluator <- function(data = NULL, filename = NULL) {
       return(as.character(col_data))
 
     train_x <- pred_data[train_idx, , drop = FALSE]
-    test_x  <- pred_data[test_idx, , drop = FALSE]
+    test_x  <- pred_data[test_idx,  , drop = FALSE]
 
-    # Nearest numeric neighbors
-    knn_res <- FNN::get.knnx(train_x, test_x, k = 3)
+    if (any(apply(train_x, 2, sd, na.rm = TRUE) == 0)) return(as.character(col_data))
 
-    # Safe mode finder
+    knn_res <- safe_knn(train_x, test_x, k = 3)
+    if (nrow(knn_res$nn.index) == 0) return(as.character(col_data))
+
     get_mode <- function(x) {
       ux <- unique(x[!is.na(x)])
       if (length(ux) == 0) return(NA_character_)
@@ -292,12 +335,22 @@ evaluator <- function(data = NULL, filename = NULL) {
       get_mode(as.character(col_data[train_idx[neighbor_idx]]))
     }, character(1))
 
-    # Replace missing with imputed
     col_data[test_idx] <- imp_vals
-    as.character(col_data)  # Always return character
+    as.character(col_data)
   }
 
-  # Safely stop the cluster only if it exists
+  # ---- Merge categorical results back safely ----
+  if (length(cat_cols) > 0 && length(imputed_categorical) > 0) {
+    for (i in seq_along(cat_cols)) {
+      colname <- cat_cols[i]
+      imp_vals <- imputed_categorical[[i]]
+      if (!is.null(imp_vals) && length(imp_vals) == nrow(data_knn)) {
+        data_knn[[colname]] <- factor(imp_vals, levels = levels(raw_data[[colname]]))
+      }
+    }
+  }
+
+  # ---- Stop cluster safely ----
   if (exists("cl") && inherits(cl, "cluster")) {
     parallel::stopCluster(cl)
     message("Parallel mixed-type KNN imputation complete (parallel).")
@@ -305,34 +358,9 @@ evaluator <- function(data = NULL, filename = NULL) {
     message("KNN imputation completed in sequential mode (no cluster to stop).")
   }
 
-  # ---- Merge results ----
-  for (i in seq_along(num_cols)) {
-    num_data_scaled[, num_cols[i]] <- imputed_numeric[[i]]
-  }
-  num_data_imputed <- sweep(num_data_scaled, 2, attr(num_data_scaled, "scaled:scale"), `*`)
-  num_data_imputed <- sweep(num_data_imputed, 2, attr(num_data_scaled, "scaled:center"), `+`)
-  data_knn[num_cols] <- num_data_imputed
+  cat("\n[DEBUG] KNN numeric NA count before:", sum(is.na(raw_data_modified[num_cols])),
+      "after:", sum(is.na(data_knn[num_cols])), "\n")
 
-  # Convert back categorical to proper factor
-  for (i in seq_along(cat_cols)) {
-    data_knn[[cat_cols[i]]] <- factor(imputed_categorical[[i]], levels = levels(raw_data[[cat_cols[i]]]))
-  }
-
-
-  # ---- Final fallback for any remaining NAs ----
-  for (col in names(data_knn)) {
-    if (anyNA(data_knn[[col]])) {
-      if (is.numeric(data_knn[[col]])) {
-        data_knn[[col]][is.na(data_knn[[col]])] <- mean(data_knn[[col]], na.rm = TRUE)
-      } else {
-        ux <- unique(data_knn[[col]][!is.na(data_knn[[col]])])
-        if (length(ux) > 0) {
-          mode_val <- ux[which.max(tabulate(match(data_knn[[col]], ux)))]
-          data_knn[[col]][is.na(data_knn[[col]])] <- mode_val
-        }
-      }
-    }
-  }
 
 
   ###############################################################
@@ -375,93 +403,111 @@ evaluator <- function(data = NULL, filename = NULL) {
   eval_knn <- build_eval_data(data_knn)
 
 
-  # ---- 5. Call Rcpp evaluator ----
-  res_mean   <- evaluate_imputation(eval_mean$true,   eval_mean$imputed,   "Mean/Mode")
-  res_median <- evaluate_imputation(eval_median$true, eval_median$imputed, "Median/Mode")
-  res_mice   <- evaluate_imputation(eval_mice$true,   eval_mice$imputed,   "MICE")
-  res_knn <- evaluate_imputation(eval_knn$true, eval_knn$imputed, "KNN")
+  ###############################################################
+  # ---- 5. Call Rcpp evaluator (split numeric vs categorical) ----
+  ###############################################################
+  numeric_cols <- names(Filter(is.numeric, raw_data))
+  categorical_cols <- names(Filter(Negate(is.numeric), raw_data))
 
-  class(res_mean)   <- "evaluator"
-  class(res_median) <- "evaluator"
-  class(res_mice)   <- "evaluator"
-  class(res_knn) <- "evaluator"
+  # ---- 5. Evaluate imputation (split numeric vs categorical) ----
+  res_mean <- evaluate_imputation_split(eval_mean$true, eval_mean$imputed,
+                                        numeric_cols, categorical_cols, "Mean/Mode")
+  res_median <- evaluate_imputation_split(eval_median$true, eval_median$imputed,
+                                          numeric_cols, categorical_cols, "Median/Mode")
+  res_mice <- evaluate_imputation_split(eval_mice$true, eval_mice$imputed,
+                                        numeric_cols, categorical_cols, "MICE")
+  res_knn <- evaluate_imputation_split(eval_knn$true, eval_knn$imputed,
+                                       numeric_cols, categorical_cols, "KNN")
 
-  # Attach the eval pairs so plotting functions can access them later
+  # ---- Attach true vs imputed evaluation data for density plots ----
   res_mean$eval   <- eval_mean
   res_median$eval <- eval_median
   res_mice$eval   <- eval_mice
   res_knn$eval    <- eval_knn
 
-  # Return all methods
+  # assign class
+  class(res_mean) <- class(res_median) <- class(res_mice) <- class(res_knn) <- "evaluator"
+
+  # ---- Return complete result ----
   list(
     mean_mode   = res_mean,
     median_mode = res_median,
     mice        = res_mice,
     knn         = res_knn
   )
-
 }
 
-
-#' print.evaluator
+#' Print evaluator results separately for numeric and categorical
 #'
-#' Print method for evaluator objects
+#' @title Print Evaluator Results
+#' @description Prints numeric and categorical evaluation metrics for an evaluator object.
 #'
-#' @param x An evaluator object
-#' @param ... Additional arguments (ignored)
-#' @seealso vignette("imputetoolkit")
-#' For a complete tutorial, see the package vignette:
-#' \code{vignette("imputetoolkit")}
+#' @param x An object of class \code{evaluator}, typically returned by \code{evaluator()}.
+#' @param ... Additional arguments passed to or from other methods (ignored).
+#'
+#' @return Invisibly returns the evaluator object.
+#' @method print evaluator
 #' @export
 print.evaluator <- function(x, ...) {
-
   cat("Evaluation for method:", x$method, "\n")
-  cat("Global Metrics:\n")
-  cat("  RMSE       :", round(x$RMSE, 4), "\n")
-  cat("  MAE        :", round(x$MAE, 4), "\n")
-  cat("  R^2        :", round(x$R2, 4), "\n")
-  cat("  Correlation:", round(x$Correlation, 4), "\n")
-  cat("  KS         :", round(x$KS, 4), "\n")
-  cat("  Accuracy   :", round(x$Accuracy, 4), "\n")
-  cat("\nPer-column metrics available in x$metrics\n")
+
+  cat("\n--- Numeric Metrics ---\n")
+  if (length(x$metrics_numeric)) {
+    num_tbl <- do.call(rbind, lapply(x$metrics_numeric, as.data.frame))
+    print(round(colMeans(num_tbl, na.rm = TRUE), 4))
+  } else {
+    cat("(none)\n")
+  }
+
+  cat("\n--- Categorical Metrics ---\n")
+  if (length(x$metrics_categorical)) {
+    cat_tbl <- do.call(rbind, lapply(x$metrics_categorical, as.data.frame))
+    print(round(colMeans(cat_tbl, na.rm = TRUE), 4))
+  } else {
+    cat("(none)\n")
+  }
+
+  invisible(x)
 }
 
-#' summary.evaluator
+
+#' @title Summarize Evaluator Results
+#' @description Returns numeric and categorical metric tables for an evaluator object.
 #'
-#' Summary method for evaluator objects
+#' @param object An object of class \code{evaluator}, typically returned by \code{evaluator()}.
+#' @param ... Additional arguments passed to or from other methods (ignored).
 #'
-#' @param object An evaluator object
-#' @param ... Additional arguments (ignored)
-#' @seealso vignette("imputetoolkit")
-#' For a complete tutorial, see the package vignette:
-#' \code{vignette("imputetoolkit")}
+#' @return A list containing:
+#'   \item{numeric_metrics}{A data frame of numeric metric values per column.}
+#'   \item{categorical_metrics}{A data frame of categorical metric values per column.}
+#' @method summary evaluator
 #' @export
 summary.evaluator <- function(object, ...) {
-  per_col <- do.call(rbind, lapply(object$metrics, function(m) as.data.frame(as.list(m))))
-  per_col <- cbind(Column = names(object$metrics), per_col)
-  rownames(per_col) <- NULL
+  if (length(object$metrics_numeric)) {
+    num_df <- do.call(rbind, lapply(object$metrics_numeric, as.data.frame))
+    num_df <- cbind(Column = names(object$metrics_numeric), num_df)
+    rownames(num_df) <- NULL
+  } else {
+    num_df <- data.frame()
+  }
 
-  global <- data.frame(
-    Column = "GLOBAL",
-    RMSE = object$RMSE,
-    MAE = object$MAE,
-    R2 = object$R2,
-    Correlation = object$Correlation,
-    KS = object$KS,
-    Accuracy = object$Accuracy
+  if (length(object$metrics_categorical)) {
+    cat_df <- do.call(rbind, lapply(object$metrics_categorical, as.data.frame))
+    cat_df <- cbind(Column = names(object$metrics_categorical), cat_df)
+    rownames(cat_df) <- NULL
+  } else {
+    cat_df <- data.frame()
+  }
+
+  list(
+    numeric_metrics = num_df,
+    categorical_metrics = cat_df
   )
-
-  rbind(per_col, global)
 }
-
 
 
 #' extract_metrics
-#'
-#' Extract evaluation metrics from Rcpp evaluator output
-#'
-#' @param res The result object returned by evaluator() (a list of methods)
-#' @return A data frame with evaluation metrics for each method
+#' Extract evaluation metrics (handles split numeric/categorical)
 #' @keywords internal
 #' @noRd
 extract_metrics <- function(res) {
@@ -470,24 +516,36 @@ extract_metrics <- function(res) {
   metrics_list <- lapply(names(res), function(method_name) {
     method_res <- res[[method_name]]
 
+    # --- Aggregate numeric metrics ---
+    if (!is.null(method_res$metrics_numeric) && length(method_res$metrics_numeric) > 0) {
+      num_tbl <- do.call(rbind, lapply(method_res$metrics_numeric, as.data.frame))
+      num_summary <- colMeans(num_tbl, na.rm = TRUE)
+    } else {
+      num_summary <- c()
+    }
+
+    # --- Aggregate categorical metrics ---
+    if (!is.null(method_res$metrics_categorical) && length(method_res$metrics_categorical) > 0) {
+      cat_tbl <- do.call(rbind, lapply(method_res$metrics_categorical, as.data.frame))
+      cat_summary <- colMeans(cat_tbl, na.rm = TRUE)
+    } else {
+      cat_summary <- c()
+    }
+
+    # Combine numeric + categorical summaries
+    all_metrics <- c(num_summary, cat_summary)
+
     data.frame(
-      Method      = method_res$method,
-      RMSE        = method_res$RMSE,
-      MAE         = method_res$MAE,
-      R2          = method_res$R2,
-      Correlation = method_res$Correlation,
-      KS          = method_res$KS,
-      Accuracy    = method_res$Accuracy,
+      Method = method_res$method,
+      t(as.data.frame(all_metrics)),
       stringsAsFactors = FALSE
     )
   })
 
-  # Base R only, no dplyr
   metrics_df <- do.call(rbind, metrics_list)
   rownames(metrics_df) <- NULL
-  return(metrics_df)
+  metrics_df
 }
-
 
 
 #' Print evaluation metrics for imputation methods
@@ -515,12 +573,11 @@ print_metrics <- function(x) {
 
 #' Plot evaluation metrics
 #'
+#' Plot evaluation metrics (numeric + categorical)
+#'
 #' @param x A result list returned by evaluator()
-#' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL")
-#' @return A ggplot object
-#' @seealso vignette("imputetoolkit")
-#' For a complete tutorial, see the package vignette:
-#' \code{vignette("imputetoolkit")}
+#' @param metric Character, which metric to plot (e.g., "RMSE", "MAE", "R2", "Accuracy", "F1", "ALL")
+#' @return A ggplot2 object
 #' @export
 plot_metrics <- function(x, metric = "RMSE") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
@@ -530,192 +587,170 @@ plot_metrics <- function(x, metric = "RMSE") {
     stop("Package 'tidyr' is required. Please install it.")
   }
 
+  # ---- Extract all available metrics ----
   metrics_df <- extract_metrics(x)
-  valid_metrics <- c("RMSE", "MAE", "R2", "KS", "Accuracy")
 
+  # ---- Detect numeric + categorical metric columns ----
+  numeric_metrics <- c("RMSE", "MAE", "R2", "Correlation", "KS")
+  categorical_metrics <- c("Accuracy", "Kappa", "F1",
+                           "MacroF1", "BalancedAccuracy")
+
+  all_metrics <- intersect(
+    c(numeric_metrics, categorical_metrics),
+    colnames(metrics_df)
+  )
+
+  if (length(all_metrics) == 0) {
+    stop("No valid metrics found in the results.")
+  }
+
+  # ---- When user wants all metrics ----
   if (metric == "ALL") {
     long_df <- tidyr::pivot_longer(
       metrics_df,
-      cols = dplyr::all_of(valid_metrics),
+      cols = dplyr::all_of(all_metrics),
       names_to = "Metric",
       values_to = "Value"
     )
 
-    p <- ggplot2::ggplot(long_df, ggplot2::aes(x = .data$Method, y = .data$Value, fill = .data$Method)) +
+    p <- ggplot2::ggplot(
+      long_df,
+      ggplot2::aes(x = .data$Method, y = .data$Value, fill = .data$Method)
+    ) +
       ggplot2::geom_bar(stat = "identity", position = "dodge") +
       ggplot2::facet_wrap(~ Metric, scales = "free_y") +
       ggplot2::theme_minimal() +
       ggplot2::labs(
-        title = "Comparison of Methods across Metrics",
-        y = "Value", x = "Method"
-      ) +
-      ggplot2::theme(legend.position = "none")
-
-    return(p)
-
-  } else {
-    if (!(metric %in% valid_metrics)) {
-      stop("Metric ", metric, " not found. Please use one of: ", paste(valid_metrics, collapse = ", "), " or ALL")
-    }
-
-    p <- ggplot2::ggplot(metrics_df, ggplot2::aes(x = .data$Method, y = .data[[metric]], fill = .data$Method)) +
-      ggplot2::geom_bar(stat = "identity", position = "dodge") +
-      ggplot2::theme_minimal() +
-      ggplot2::labs(
-        title = paste("Comparison of Methods on", metric),
-        y = metric, x = "Method"
+        title = "Comparison of Imputation Methods across All Metrics",
+        x = "Method",
+        y = "Value"
       ) +
       ggplot2::theme(legend.position = "none")
 
     return(p)
   }
-}
 
-
-#' Plot density comparisons of true vs imputed values for one column
-#'
-#' @param eval_list A named list containing evaluation data for each method
-#'   (each should have $true and $imputed lists)
-#' @param col_name Character, name of the column to plot
-#' @return A ggplot2 object showing density overlays of true vs imputed data
-#' @export
-plot_density_per_column <- function(eval_list, col_name) {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop("Package 'ggplot2' is required. Please install it.")
-  }
-
-  # Prepare data for plotting
-  plot_data <- lapply(names(eval_list), function(method) {
-    eval_data <- eval_list[[method]]
-    if (is.null(eval_data$true[[col_name]])) return(NULL)
-
-    data.frame(
-      Value = c(eval_data$true[[col_name]], eval_data$imputed[[col_name]]),
-      Type = rep(c("True", "Imputed"), each = length(eval_data$true[[col_name]])),
-      Method = method
+  # ---- When user specifies a single metric ----
+  if (!(metric %in% all_metrics)) {
+    stop(
+      "Metric '", metric, "' not found. Available metrics are: ",
+      paste(all_metrics, collapse = ", "), " or use metric = 'ALL'."
     )
-  })
-
-  plot_data <- do.call(rbind, plot_data)
-
-  ggplot2::ggplot(plot_data, ggplot2::aes(x = Value, fill = Type)) +
-    ggplot2::geom_density(alpha = 0.4) +
-    ggplot2::facet_wrap(~ Method, scales = "free") +
-    ggplot2::theme_minimal() +
-    ggplot2::labs(
-      title = paste("Density Comparison for", col_name),
-      x = col_name, y = "Density"
-    ) +
-    ggplot2::theme(legend.position = "top")
-}
-
-
-#' Plot combined density comparisons for all columns and methods
-#'
-#' @param eval_list A named list containing evaluation data for each method
-#'   (mean_mode, median_mode, mice, knn)
-#' @return A faceted ggplot object showing all density comparisons
-#' @export
-plot_density_all <- function(eval_list) {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop("Package 'ggplot2' is required. Please install it.")
   }
 
-  # Combine all true vs imputed data for every column and method
-  all_data <- lapply(names(eval_list), function(method) {
-    eval_data <- eval_list[[method]]
-    do.call(rbind, lapply(names(eval_data$true), function(col) {
-      data.frame(
-        Value = c(eval_data$true[[col]], eval_data$imputed[[col]]),
-        Type = rep(c("True", "Imputed"), each = length(eval_data$true[[col]])),
-        Method = method,
-        Column = col
-      )
-    }))
-  })
-
-  all_data <- do.call(rbind, all_data)
-
-  ggplot2::ggplot(all_data, ggplot2::aes(x = Value, fill = Type)) +
-    ggplot2::geom_density(alpha = 0.4) +
-    ggplot2::facet_grid(Column ~ Method, scales = "free") +
+  p <- ggplot2::ggplot(
+    metrics_df,
+    ggplot2::aes(x = .data$Method, y = .data[[metric]], fill = .data$Method)
+  ) +
+    ggplot2::geom_bar(stat = "identity", position = "dodge") +
     ggplot2::theme_minimal() +
     ggplot2::labs(
-      title = "Density Comparison Across All Columns and Methods",
-      x = "Value", y = "Density"
+      title = paste("Comparison of Methods on", metric),
+      x = "Method",
+      y = metric
     ) +
-    ggplot2::theme(legend.position = "top")
+    ggplot2::theme(legend.position = "none")
+
+  return(p)
 }
 
-#' Suggest the best imputation method
+
+#' Suggest the best imputation method separately for numeric and categorical columns
 #'
 #' @param x A result list returned by evaluator()
 #' @param metric Character, metric to optimize
-#'   ("RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL").
-#'   If "ALL" or missing, the function compares across all metrics.
-#' @return If a single metric is provided, returns the best method (character).
-#'   If "ALL", returns a named list showing the metrics associated with each best method.
-#' @seealso vignette("imputetoolkit")
-#' For a complete tutorial, see the package vignette:
-#' \code{vignette("imputetoolkit")}
+#'   ("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy", "Kappa",
+#'    "F1", "MacroF1", "BalancedAccuracy", or "ALL").
+#'   If "ALL" or missing, compares across all metrics.
+#' @return A list with two elements: `numeric` and `categorical`,
+#'   each containing the best methods based on the chosen metric(s).
 #' @export
 suggest_best_method <- function(x, metric = "ALL") {
-
   metrics_df <- extract_metrics(x)
 
-  higher_metrics <- c("R2", "KS", "Accuracy")
-  lower_metrics  <- c("RMSE", "MAE")
-  valid_metrics  <- c(higher_metrics, lower_metrics)
+  # ---- Define metric groups ----
+  numeric_metrics <- c("RMSE", "MAE", "R2", "Correlation", "KS")
+  categorical_metrics <- c("Accuracy", "Kappa", "F1", "MacroF1", "BalancedAccuracy")
 
-  if (metric == "ALL" || is.null(metric)) {
-    best_methods <- list()
+  higher_better <- c("R2", "Correlation", "KS", "Accuracy", "Kappa", "F1", "MacroF1", "BalancedAccuracy")
+  lower_better  <- c("RMSE", "MAE")
 
-    for (m in valid_metrics) {
-      if (!(m %in% colnames(metrics_df))) next
-
-      if (m %in% higher_metrics) {
-        best_idx <- which.max(metrics_df[[m]])
-      } else {
-        best_idx <- which.min(metrics_df[[m]])
-      }
-      method <- metrics_df$Method[best_idx]
-      best_methods[[m]] <- method
-    }
-
-    # Group metrics by best method
-    grouped <- split(names(best_methods), unlist(best_methods))
-
-    # Build summary message
-    msg <- paste(
-      vapply(names(grouped),
-             function(method) {
-               metrics <- paste(grouped[[method]], collapse = ", ")
-               paste0("    As per ", metrics, " metrics: ", method)
-             },
-             character(1L)),
-      collapse = "\n"
-    )
-
-    message("Suggested best imputation methods across metrics:\n", msg)
-    return(grouped)
-
-  } else {
-    if (!(metric %in% valid_metrics)) {
-      stop("Unknown metric: ", metric,
-           ". Please use one of: ", paste(valid_metrics, collapse = ", "), ", or ALL")
-    }
-
-    if (metric %in% higher_metrics) {
-      best_idx <- which.max(metrics_df[[metric]])
+  # ---- Helper to select best method ----
+  pick_best <- function(df, metric) {
+    if (!metric %in% colnames(df)) return(NA_character_)
+    vals <- df[[metric]]
+    if (all(is.na(vals))) return(NA_character_)
+    if (metric %in% higher_better) {
+      df$Method[which.max(vals)]
     } else {
-      best_idx <- which.min(metrics_df[[metric]])
+      df$Method[which.min(vals)]
+    }
+  }
+
+  # ---- Split numeric vs categorical ----
+  num_df <- metrics_df[, c("Method", intersect(numeric_metrics, colnames(metrics_df))), drop = FALSE]
+  cat_df <- metrics_df[, c("Method", intersect(categorical_metrics, colnames(metrics_df))), drop = FALSE]
+
+  # ---- Case 1: ALL metrics ----
+  if (metric == "ALL" || is.null(metric)) {
+    best_numeric <- lapply(intersect(numeric_metrics, colnames(num_df)), function(m) pick_best(num_df, m))
+    best_categorical <- lapply(intersect(categorical_metrics, colnames(cat_df)), function(m) pick_best(cat_df, m))
+
+    names(best_numeric) <- intersect(numeric_metrics, colnames(num_df))
+    names(best_categorical) <- intersect(categorical_metrics, colnames(cat_df))
+
+    # Group by method
+    grouped_numeric <- split(names(best_numeric), unlist(best_numeric))
+    grouped_categorical <- split(names(best_categorical), unlist(best_categorical))
+
+    # ---- Nicely formatted output ----
+    message("\nSuggested Best Imputation Methods:\n")
+
+    if (length(grouped_numeric)) {
+      message("Numeric Columns:")
+      num_msg <- paste(vapply(names(grouped_numeric), function(m) {
+        paste0("     Best imputation method as per \"",
+               paste(grouped_numeric[[m]], collapse = ", "),
+               "\" metric: ", m)
+      }, character(1L)), collapse = "\n")
+      message(num_msg)
     }
 
-    best_method <- metrics_df$Method[best_idx]
-    message("Suggested best imputation method based on ", metric, ": ", best_method)
-    return(best_method)
+    if (length(grouped_categorical)) {
+      message("\nCategorical Columns:")
+      cat_msg <- paste(vapply(names(grouped_categorical), function(m) {
+        paste0("     Best imputation method as per \"",
+               paste(grouped_categorical[[m]], collapse = ", "),
+               "\" metric: ", m)
+      }, character(1L)), collapse = "\n")
+      message(cat_msg)
+    }
+
+    return(invisible(list(
+      numeric = grouped_numeric,
+      categorical = grouped_categorical
+    )))
+  }
+
+  # ---- Case 2: Single metric ----
+  metric <- match.arg(metric, choices = c(numeric_metrics, categorical_metrics), several.ok = FALSE)
+
+  if (metric %in% numeric_metrics) {
+    best_method <- pick_best(num_df, metric)
+    message("\nNumeric Columns:")
+    message("     Best imputation method as per \"", metric, "\" metric: ", best_method)
+    return(invisible(list(numeric = best_method, categorical = NULL)))
+  } else if (metric %in% categorical_metrics) {
+    best_method <- pick_best(cat_df, metric)
+    message("\nCategorical Columns:")
+    message("     Best imputation method as per \"", metric, "\" metric: ", best_method)
+    return(invisible(list(numeric = NULL, categorical = best_method)))
+  } else {
+    stop("Unknown metric: ", metric)
   }
 }
+
+
 
 
 #' Evaluate results: print, plot, and suggest best method
