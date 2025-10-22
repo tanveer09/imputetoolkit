@@ -27,69 +27,76 @@ if (!nzchar(file_path) || !file.exists(file_path)) {
 library(imputetoolkit)
 ```
 
----
+------------------------------------------------------------------------
 
 # Introduction
 
-Handling **missing data** is one of the most common and crucial challenges in data science.
-Whether caused by *sensor errors*, *survey non-responses*, or *data-entry mistakes*, missingness can bias results and reduce model accuracy.
+Handling **missing data** remains one of the most crucial tasks in applied data science. Whether caused by *sensor failures*, *survey non-responses*, or *data-entry mistakes*, missingness can bias analyses and reduce model performance.
 
-Simple strategies like **listwise deletion** often waste valuable data.
-More robust approaches involve **imputation** — replacing missing values with reasonable estimates.
+Simple techniques like listwise deletion often waste data. More principled strategies use **imputation**—replacing missing values with reasonable estimates.
 
-However, no single imputation method is universally best.
-The **`imputetoolkit`** package helps you **compare, evaluate, and visualize** different methods consistently.
+However, **no single method** performs best for all data types or distributions. The **`imputetoolkit`** package provides an **R + C++ unified framework** to **inject**, **impute**, **evaluate**, and **visualize** different imputation strategies side by side.
 
----
+------------------------------------------------------------------------
 
 # What the Package Does
 
-`imputetoolkit` provides a full benchmarking pipeline for missing-data methods:
+`imputetoolkit` performs a full **imputation benchmarking pipeline**:
 
-- Injects controlled missingness into data
-- Applies multiple imputation methods:
+-   Controlled missingness injection
 
-* Mean/Mode (with skewness-aware log transform)
-* Median/Mode
-* MICE (Predictive Mean Matching)
-* KNN (parallel mixed-type imputation)
+-   Multi-method imputation:
 
-- Evaluates each method using Rcpp-optimized metrics:
+-   **Mean / Mode** (with skewness-aware log transform)
 
-* RMSE, MAE, R², Correlation, KS statistic, and Accuracy
+-   **Median / Mode**
 
-- Scales numeric data per-column using **min–max scaling**
-- Provides plots and summary tables for easy comparison
+-   **MICE** 
 
----
+-   **KNN** (parallel mixed-type imputation using `FNN`)
+
+    -   Split evaluation of **numeric** and **categorical** features via C++ back-end
+    -   Metric computation using Rcpp for efficiency
+    -   Automatic **best-method suggestions**
+    -   Visual comparisons (metrics + density plots)
+
+------------------------------------------------------------------------
 
 # Typical Workflow
 
-The **main entry point** is the `evaluator()` function:
+The main entry point is the **`evaluator()`** function:
 
-```r
+``` r
 res <- evaluator(filename = "path/to/data.csv")
 ```
 
-Internally, it performs:
+Internally, this function:
 
-1. Load or receive the data frame.
-2. Identify and inject additional missingness.
-3. Compute min–max values for scaling numeric columns.
-4. Impute using Mean/Mode, Median/Mode, MICE, and KNN.
-5. Evaluate each method with global and per-column metrics.
-6. Return a structured list of `evaluator` objects.
+1.  Loads the dataset or uses the provided data frame.
 
----
+2.  Detects numeric vs categorical columns.
+
+3.  Injects missing values under controlled proportions.
+
+4.  Performs four imputation methods (Mean/Mode, Median/Mode, MICE, KNN).
+
+5.  Evaluates each using:
+
+    -   **Numeric metrics:** RMSE, MAE, R², Correlation, KS.
+    -   **Categorical metrics:** Accuracy, Kappa, F1, Macro F1, Balanced Accuracy.
+
+6.  Returns a named list of `"evaluator"` objects, one per method.
+
+------------------------------------------------------------------------
 
 # Example 1 – Quick Start
 
 ```{r, eval=FALSE}
-# Load the built-in dataset
-file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+# Load the built-in mixed-type dataset
+file <- system.file("extdata", "synthetic_mixed_dataset.csv", package = "imputetoolkit")
 raw_data <- read.csv(file, stringsAsFactors = TRUE)
 
-# Run the evaluator
+# Run the full evaluator pipeline
 res <- evaluator(data = raw_data)
 ```
 
@@ -99,7 +106,7 @@ res <- evaluator(data = raw_data)
 print(res$mean_mode)
 ```
 
-### Detailed Per-Column Summary
+### Per-Column Summary
 
 ```{r, eval=FALSE}
 summary(res$mean_mode)
@@ -117,170 +124,171 @@ print_metrics(res)
 plot_metrics(res, "ALL")
 ```
 
----
+------------------------------------------------------------------------
 
-# Example 2 – KNN and Log-Transform Aware Mean Imputation
+# Example 2 – Split Evaluation: Numeric vs Categorical
 
-The new version introduces:
-
-* **KNN imputation** using `FNN` + parallelism via `foreach` and `doParallel`.
-* **Log-based mean imputation** for highly skewed numeric features.
-
-You can monitor KNN progress in the console:
-
-```
-Running mixed-type parallel KNN imputation using FNN...
-Using 8 cores for KNN imputation...
-Parallel mixed-type KNN imputation complete (parallel).
-```
-
-Each method’s results are stored as:
-
-* `res$mean_mode`
-* `res$median_mode`
-* `res$mice`
-* `res$knn`
-
-All share the same structure and S3 class `"evaluator"`.
-
----
-
-# Example 3 – Suggesting the Best Method
+Each imputation result now contains two separate metric groups:
 
 ```{r, eval=FALSE}
-# Suggest best based on one metric
+names(res$mean_mode)
+#> [1] "method" "metrics_numeric" "metrics_categorical"
+```
+
+Example numeric-metric output (truncated):
+
+```         
+--- Numeric Metrics ---
+   RMSE    MAE      R2  Correlation    KS
+  0.2068  0.1750  -0.0001   0.0000   0.5068
+```
+
+Example categorical-metric output:
+
+```         
+--- Categorical Metrics ---
+  Accuracy  Kappa   F1  MacroF1  BalancedAccuracy
+   0.2782   0.0000  0.2782  0.1295  0.2700
+```
+
+------------------------------------------------------------------------
+
+# Example 3 – Suggesting the Best Imputation Method
+
+```{r, eval=FALSE}
+# Single-metric suggestion
 suggest_best_method(res, "RMSE")
 
-# Suggest across all metrics
+# Aggregate suggestion across all metrics
 suggest_best_method(res, "ALL")
+```
+
+Typical output:
+
+```         
+Numeric Columns:
+   Best imputation method as per "RMSE, MAE, R2, KS" metric: Mean/Mode
+   Best imputation method as per "Correlation" metric: MICE
+
+Categorical Columns:
+   Best imputation method as per "Kappa" metric: KNN
+   Best imputation method as per "Accuracy, F1, BalancedAccuracy" metric: Mean/Mode
+   Best imputation method as per "MacroF1" metric: MICE
+```
+
+------------------------------------------------------------------------
+
+# Example 4 – Visual Comparison of Results
+
+### Metric-Based Plots
+
+```{r, eval=FALSE, fig.width=7, fig.height=5}
+plot_metrics(res, metric = "RMSE")            # Numeric
+plot_metrics(res, metric = "Accuracy")        # Categorical
+plot_metrics(res, metric = "ALL")             # Combined panel
 ```
 
 Example output:
 
-```
-Suggested best imputation methods across metrics:
-    As per RMSE, MAE: KNN
-    As per R2, KS, Accuracy: MICE
-```
+![Comparison of Imputation Methods across All Metrics](example_plot_all.png)
 
----
+------------------------------------------------------------------------
 
-# Example 4 – Visualizing Density Comparisons
+# Example 5 – Distributional Similarity via Density Plots
 
-After imputation, you can visualize the distributional agreement between **true** and **imputed** values.
+Distribution overlap between **true** and **imputed** values can be visualized:
 
 ```{r, eval=FALSE}
-# Extract evaluation lists
 eval_list <- get_eval_list(res)
 
-# Plot for a specific numeric column
+# Single column
 plot_density_per_column(eval_list, "age")
 
-# Combined density plots for all columns × methods
+# All columns × methods
 plot_density_all(eval_list)
 ```
 
-These plots make it easy to see whether imputed values preserve each variable’s shape and spread.
+Example:
 
----
+-   Top panel shows overlap for all numeric variables.
+-   Lower panel zooms into one column (e.g. `age`) to inspect shape preservation.
 
-# Example 5 – Full Automated Report
+![True vs Imputed Density Comparison](example_density_all.png)
 
-The helper `evaluate_results()` runs the whole analysis:
+------------------------------------------------------------------------
 
-```{r, eval=FALSE}
-evaluate_results(res, metric = "RMSE")
-```
+# Evaluation Metrics (Expanded)
 
-This function:
+| **Metric**            | **Definition / Purpose**                                 | **Better Value** |
+|:---------------|:---------------------------------------|:--------------:|
+| **RMSE**              | Root Mean Square Error – overall numeric deviation       |        ↓         |
+| **MAE**               | Mean Absolute Error                                      |        ↓         |
+| **R²**                | Proportion of variance explained                         |        ↑         |
+| **Correlation**       | Pearson correlation between true & imputed values        |        ↑         |
+| **KS**                | Kolmogorov–Smirnov statistic – distributional similarity |        ↑         |
+| **Accuracy**          | Fraction of exact categorical matches                    |        ↑         |
+| **Kappa**             | Chance-adjusted agreement statistic                      |        ↑         |
+| **F1 / Macro F1**     | Harmonic mean of precision & recall / class-balanced F1  |        ↑         |
+| **Balanced Accuracy** | Mean recall across classes (robust to imbalance)         |        ↑         |
 
-1. Prints a metrics table (`print_metrics()`)
-2. Displays bar plots of results (`plot_metrics()`)
-3. Recommends the best method (`suggest_best_method()`)
+------------------------------------------------------------------------
 
----
-
-# Evaluation Metrics
-
-| Metric          | Meaning                                                | Higher/Lower Better |
-| :-------------- | :----------------------------------------------------- | :-----------------: |
-| **RMSE**        | Root Mean Squared Error between true & imputed values  |          ↓          |
-| **MAE**         | Mean Absolute Error                                    |          ↓          |
-| **R²**          | Proportion of variance explained                       |          ↑          |
-| **Correlation** | Pearson correlation between true & imputed             |          ↑          |
-| **KS**          | Kolmogorov–Smirnov statistic (distribution similarity) |          ↑          |
-| **Accuracy**    | % of exact matches (categorical)                       |          ↑          |
-
----
-
-# Example 6 – Custom Datasets
-
-You can pass any data frame directly:
+# Example 6 – Full Automated Comparison
 
 ```{r, eval=FALSE}
-df <- read.csv("custom_data.csv")
-res <- evaluator(data = df)
+evaluate_results(res, metric = "ALL")
 ```
 
-Or use any file type supported by the package (`.csv`, `.tsv`, `.xlsx`, `.rds`).
+This wrapper prints summary tables, draws all metric plots, and automatically reports the top-performing imputation methods.
 
----
+------------------------------------------------------------------------
 
 # Behind the Scenes
 
-### Parallelized KNN
+### Rcpp C++ Backend
 
-* Uses `FNN::get.knnx()` for nearest-neighbor search.
-* Runs in parallel (`doParallel`) for speed.
-* Handles both numeric and categorical variables separately.
+-   `evaluate_imputation_split()` computes numeric and categorical metrics in C++ for speed.
+-   Numeric metrics → RMSE, MAE, R², Correlation, KS
+-   Categorical metrics → Accuracy, Kappa, F1, Macro F1, Balanced Accuracy
 
-### Skewness-Aware Mean
+### Parallel KNN Imputation
 
-* Uses `e1071::skewness()` to detect skewness.
-* If |skewness| > 1, applies **log-transform + geometric mean**.
-* Back-transforms to preserve scale.
+-   Uses `FNN::get.knnx()` and `doParallel` for mixed-type parallel processing.
 
-### Scaled Evaluation
+### Skewness-Aware Mean Imputation
 
-* Numeric columns are scaled to [0, 1] using stored min–max values.
-* Ensures fair metric comparison across features.
+-   Applies a **log + geometric-mean correction** when absolute skewness \> 1.
 
----
+### Min–Max Scaling
+
+-   All numeric columns scaled to [0, 1] for fair cross-feature evaluation.
+
+------------------------------------------------------------------------
 
 # Summary
 
-The `imputetoolkit` package automates **end-to-end benchmarking** of imputation strategies.
-It’s ideal for teaching, exploratory data analysis, and reproducible research.
+`imputetoolkit` now supports **split numeric/categorical evaluation** and **automated visualization** within one reproducible workflow.
 
-✔ Unified API for multiple imputation methods
-✔ Rcpp-accelerated evaluation metrics
-✔ Parallel KNN support
-✔ Density visualization for true vs imputed
-✔ Automatic method suggestion
+-   Unified interface for multiple imputation strategies
+-   Rcpp-accelerated metric computation
+-   Parallel KNN for mixed-type data
+-   Density & metric visualizations
+-   Best-method recommendations by metric type
 
----
+Ideal for **research**, **teaching**, and **benchmarking imputation methods**.
 
-# Further Reading
+------------------------------------------------------------------------
 
-For detailed examples:
+# Further Reading & Citation
 
-```r
+For reproducible examples:
+
+``` r
 vignette("imputetoolkit")
 ```
 
-or explore the GitHub repository for:
-
-* Additional sample datasets
-* Unit tests (`testthat/`)
-* The tester project demonstrating complete end-to-end runs
-
----
-
-# Citation
-
 If you use this package, please cite:
 
-> Singh, Tanveer. (2025). *imputetoolkit: An R Package for Evaluating Missing Data Imputation Methods*.
-> Victoria University of Wellington.
+> **Singh, Tanveer (2025).** *imputetoolkit: An R Package for Evaluating Missing Data Imputation Methods.* Victoria University of Wellington.
 
----
+------------------------------------------------------------------------

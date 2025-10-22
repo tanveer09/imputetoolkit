@@ -1,287 +1,298 @@
-# imputetoolkit <img src="https://www.r-project.org/logo/Rlogo.png" width="40" align="right"/>
+# imputetoolkit. <img src="man/figures/imputetoolkit_logo.png" width="70" align="right"/>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://tanveer09.github.io/imputetoolkit/)
-[![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://tanveer09.github.io/imputetoolkit/) [![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
 
----
+------------------------------------------------------------------------
 
 ## Overview
 
-**imputetoolkit** is an R package for **evaluating and benchmarking missing-data imputation methods** using a unified **R + C++ backend**.
+**imputetoolkit** is an R package for **evaluating and benchmarking missing-data imputation techniques** using a unified **R + C++ backend**.
 
-It provides a complete, reproducible pipeline for:
+It automates the full workflow of **data preparation → missingness injection → imputation → metric-based evaluation → visualization**, providing both **numeric** and **categorical** assessments.
 
-- Data loading and cleaning  
-- Controlled missingness injection  
-- Multiple imputation techniques  
-- Automated evaluation via Rcpp metrics  
-- Visualization and comparison of results  
+With parallel computation, C++ acceleration, and an intuitive S3 interface (`print`, `summary`, `plot`), the package allows users to **quantitatively justify imputation strategy choices**.
 
-With parallel computation support and a clean S3 interface (`print`, `summary`, `plot`), **imputetoolkit** helps data scientists *quantitatively justify* their imputation strategy choices.
-
----
+------------------------------------------------------------------------
 
 ## Key Features
 
-| Category | Description |
-|-----------|-------------|
-| **Imputation Methods** | Mean/Mode (with skewness-aware log transform), Median/Mode, MICE (Predictive Mean Matching), KNN (mixed-type, parallel) |
-| **Evaluation Metrics (Rcpp)** | RMSE, MAE, R², Correlation, KS Statistic, Accuracy |
-| **Scaling & Validation** | Min–max scaling of numeric columns before metric computation |
-| **Visualization** | ggplot-based bar and density plots for all methods |
-| **Recommendation** | Automatic best-method suggestion by metric |
-| **Performance** | Parallelized KNN using `FNN` + `foreach` + `doParallel` |
-| **Reproducibility** | Fixed seeds and consistent deterministic pipeline |
+| Category                      | Description                                                                                                                      |
+|---------------------------------|---------------------------------------|
+| **Imputation Methods**        | Mean/Mode (skewness-aware log transform), Median/Mode, MICE (Predictive Mean Matching), and mixed-type KNN (parallelized)        |
+| **Evaluation Metrics (Rcpp)** | Split into: <br>• *Numeric:* RMSE, MAE, R², Correlation, KS <br>• *Categorical:* Accuracy, Kappa, F1, MacroF1, Balanced Accuracy |
+| **Parallelization**           | Multi-core KNN imputation using `FNN`, `foreach`, and `doParallel`                                                               |
+| **Scaling**                   | Min–max scaling of numeric columns for fair metric comparison                                                                    |
+| **Visualization**             | ggplot2-based metric and density plots (per method or all methods)                                                               |
+| **Recommendation**            | Automatic “best-method” suggestions per metric type                                                                              |
+| **Reproducibility**           | Deterministic pipeline with fixed seeds and consistent outputs                                                                   |
 
----
+------------------------------------------------------------------------
 
 ## Package Structure
 
-```
+```         
 
 imputetoolkit/
 ├── DESCRIPTION / NAMESPACE
 ├── R/
-│   ├── evaluator.R          # main pipeline & helper functions
-│   ├── plot_metrics.R       # plotting utilities
-│   ├── print_summary.R      # S3 print/summary methods
-│   ├── utils.R              # internal helpers
-│   └── RcppExports.R        # auto-generated glue
+│   ├── evaluator.R             # main pipeline + S3 interface
+│   ├── plot_metrics.R          # plotting utilities
+│   ├── print_summary.R         # print() & summary() methods
+│   ├── utils.R                 # helper utilities
+│   └── RcppExports.R           # glue between R and C++
 ├── src/
-│   ├── evaluator.cpp        # Rcpp backend for metric computation
+│   ├── evaluate_imputation_split.cpp   # C++ backend for numeric + categorical metrics
 │   ├── RcppExports.cpp
 │   └── (future extensions)
-├── inst/extdata/            # sample datasets
-├── vignettes/               # user guide (html_vignette)
-└── tests/testthat/          # full unit test suite
-
+├── inst/extdata/               # sample datasets
+├── vignettes/                  # user guide (html_vignette)
+└── tests/testthat/             # full unit test suite
 ```
 
----
+------------------------------------------------------------------------
 
 ## Core Functions
 
 ### `evaluator()`
-Main entry point: runs the entire pipeline  
-→ load data → inject missingness → impute → evaluate.
 
-**Supported input types:** `.csv`, `.tsv`, `.xlsx`, `.rds`
+Main pipeline that executes: 1. Data loading or input validation\
+2. Missingness injection\
+3. Imputation via all four methods\
+4. Metric evaluation (numeric & categorical)\
+5. Return of structured `evaluator` objects
 
-**Returns:**  
-A named list of `evaluator` S3 objects:  
-`mean_mode`, `median_mode`, `mice`, `knn`
+**Returns:**
+
+``` r
+list(mean_mode, median_mode, mice, knn)
+```
+
+Each object contains:
+
+``` r
+$method
+$metrics_numeric
+$metrics_categorical
+```
 
 ### S3 Methods
-- `print.evaluator()` – concise textual summary  
-- `summary.evaluator()` – per-column + global metrics  
-- `print_metrics()` – tabular comparison via **knitr::kable**  
-- `plot_metrics()` – ggplot visual comparison (single or all metrics)  
-- `suggest_best_method()` – recommends optimal methods by metric  
-- `evaluate_results()` – print + plot + recommend in one call  
-- `get_eval_list()` – extract true vs imputed pairs for plotting  
-- `plot_density_per_column()` / `plot_density_all()` – density overlays for distribution comparison  
 
----
+-   `print.evaluator()` – concise summary by metric type
+-   `summary.evaluator()` – per-column and aggregated results
+-   `print_metrics()` – combined table across all methods
+-   `plot_metrics()` – ggplot visualization for any metric
+-   `suggest_best_method()` – identifies top-performing methods
+-   `evaluate_results()` – runs print + plot + recommendation
+-   `get_eval_list()` – extracts true/imputed pairs for density plots
+-   `plot_density_per_column()` / `plot_density_all()` – visualize true vs imputed distributions
 
-## C++ Backend (`src/evaluator.cpp`)
+------------------------------------------------------------------------
 
-Implements `evaluate_imputation()` via an OOP **Evaluator** class that:
+## C++ Backend (`evaluate_imputation_split.cpp`)
 
-- Computes per-column and global metrics:  
-  RMSE, MAE, R², Correlation, KS, Accuracy  
-- Performs safe mean aggregation (ignoring NAs)  
-- Returns structured `List` objects to R
+Efficient Rcpp backend that calculates both **numeric** and **categorical** metrics in one pass.
 
-All numeric operations are optimized with **Rcpp**.
+### Numeric metrics
 
----
+| Metric      | Description                  |
+|:------------|:-----------------------------|
+| RMSE        | Root Mean Square Error       |
+| MAE         | Mean Absolute Error          |
+| R²          | Coefficient of Determination |
+| Correlation | Pearson correlation          |
+| KS          | Kolmogorov–Smirnov statistic |
+
+### Categorical metrics
+
+| Metric           | Description               |
+|:-----------------|:--------------------------|
+| Accuracy         | Exact match ratio         |
+| Kappa            | Chance-adjusted agreement |
+| F1               | Micro-F1 score            |
+| MacroF1          | Mean F1 over all classes  |
+| BalancedAccuracy | Mean recall per class     |
+
+All metrics are implemented in C++ using `Rcpp`, ensuring fast and stable performance.
+
+------------------------------------------------------------------------
 
 ## Unit Tests (`tests/testthat/`)
 
-Comprehensive tests verify:
+Comprehensive suite covering:
 
-| Test Area | Coverage |
-|------------|-----------|
-| **Core pipeline** | Mean/Mode, Median/Mode, MICE, and KNN |
-| **S3 methods** | `print`, `summary`, invisibility checks |
-| **Wrappers** | `extract_metrics`, `print_metrics`, `plot_metrics`, `suggest_best_method` |
-| **Error handling** | Invalid inputs, unsupported file types, missing arguments |
-| **Reproducibility** | Identical metrics with fixed seed |
-| **Parallel KNN** | Sequential fallback in test environments |
-| **Rcpp evaluator** | Independent numeric tests for correctness |
+| Test Area             | Focus                                                    |
+|-------------------------|-----------------------------------------------|
+| **Pipeline**          | Verifies all 4 imputation methods run successfully       |
+| **S3 Methods**        | `print`, `summary`, and invisibility checks              |
+| **Wrapper Functions** | `extract_metrics`, `plot_metrics`, `suggest_best_method` |
+| **Error Handling**    | Invalid inputs, unsupported file formats                 |
+| **Reproducibility**   | Consistent metrics with fixed seed                       |
+| **Parallel KNN**      | Multi-core execution validation                          |
+| **C++ Evaluator**     | Direct unit tests for numeric/categorical metrics        |
 
-Example output:
+Example:
 
+```         
+[ FAIL 0 | WARN 1 | SKIP 0 | PASS 76 ]
 ```
 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 46 ]
-
-````
-
----
+------------------------------------------------------------------------
 
 ## Installation
 
-Requires **R ≥ 4.0** and **Rtools** (Windows).
+Requires **R ≥ 4.0**, Rtools (Windows), and compilation support for Rcpp.
 
-### Install via `remotes`
-```r
+### Install from GitHub
+
+``` r
 install.packages("remotes")
-remotes::install_github("tanveer09/imputetoolkit@draft", build_vignettes = TRUE)
-````
+remotes::install_github("tanveer09/imputetoolkit@main", build_vignettes = TRUE)
+```
 
-### Load
+### Load the package
 
-```r
+``` r
 library(imputetoolkit)
 ```
 
-### View Vignette
+### Browse documentation
 
-```r
+``` r
 browseVignettes("imputetoolkit")
 ```
 
----
+------------------------------------------------------------------------
 
 ## Example Usage
 
 ### 1. Load Data
 
-```r
-file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
+``` r
+file <- system.file("extdata", "synthetic_mixed_dataset.csv", package = "imputetoolkit")
 raw_data <- read.csv(file, stringsAsFactors = TRUE)
 ```
 
-### 2. Run Evaluator
+### 2. Run the Evaluator
 
-```r
+``` r
 res <- evaluator(data = raw_data)
 ```
 
-### 3. Inspect Results
+### 3. Inspect One Method
 
-```r
+``` r
 print(res$mean_mode)
 summary(res$mean_mode)
 ```
 
 ### 4. Compare All Methods
 
-```r
+``` r
 print_metrics(res)
 plot_metrics(res, "ALL")
 ```
 
-### 5. Recommend Best Method
+### 5. Suggest the Best Method
 
-```r
+``` r
 suggest_best_method(res, "ALL")
 ```
 
-### 6. Visualize True vs Imputed Densities
+Example output:
 
-```r
+```         
+Numeric Columns:
+     Best imputation method as per "RMSE, MAE, R2, KS" metric: Mean/Mode
+     Best imputation method as per "Correlation" metric: MICE
+
+Categorical Columns:
+     Best imputation method as per "Kappa" metric: KNN
+     Best imputation method as per "Accuracy, F1, BalancedAccuracy" metric: Mean/Mode
+     Best imputation method as per "MacroF1" metric: MICE
+```
+
+------------------------------------------------------------------------
+
+## Example Visuals
+
+### Metric Comparison Across Methods
+
+``` r
+plot_metrics(res, "ALL")
+```
+
+![Comparison of Imputation Methods across All Metrics](docs/plots/example_metrics.png)
+
+### Single Metric (e.g. RMSE)
+
+``` r
+plot_metrics(res, "RMSE")
+```
+
+### Density Comparison
+
+``` r
 eval_list <- get_eval_list(res)
 plot_density_per_column(eval_list, "age")
 plot_density_all(eval_list)
 ```
 
----
+![True vs Imputed Densities](docs/plots/example_density.png)
 
-## Sample Output
+------------------------------------------------------------------------
 
-```
-Evaluation for method: KNN 
-Global Metrics:
-  RMSE       : 0.1841 
-  MAE        : 0.1412 
-  R^2        : 0.9213 
-  Correlation: 0.9584 
-  KS         : 0.8846 
-  Accuracy   : 0.8125 
+## Evaluation Metrics Summary
 
-Per-column metrics available in x$metrics
-```
+| Metric               | Type        | Goal | Description                        |
+|:-----------------|:-----------------|:----------------:|:------------------|
+| **RMSE**             | Numeric     |  ↓   | Root Mean Squared Error            |
+| **MAE**              | Numeric     |  ↓   | Mean Absolute Error                |
+| **R²**               | Numeric     |  ↑   | Variance explained                 |
+| **Correlation**      | Numeric     |  ↑   | Pearson correlation                |
+| **KS**               | Numeric     |  ↑   | Distribution similarity            |
+| **Accuracy**         | Categorical |  ↑   | Exact match rate                   |
+| **Kappa**            | Categorical |  ↑   | Chance-corrected agreement         |
+| **F1 / MacroF1**     | Categorical |  ↑   | Balance between precision & recall |
+| **BalancedAccuracy** | Categorical |  ↑   | Mean recall per class              |
 
----
-
-## Evaluation Metrics
-
-| Metric          | Description                                              | Goal |
-| :-------------- | :------------------------------------------------------- | :--: |
-| **RMSE**        | Root Mean Squared Error                                  |   ↓  |
-| **MAE**         | Mean Absolute Error                                      |   ↓  |
-| **R²**          | Proportion of variance explained                         |   ↑  |
-| **Correlation** | Pearson correlation (true vs imputed)                    |   ↑  |
-| **KS**          | Kolmogorov–Smirnov statistic (distributional similarity) |   ↑  |
-| **Accuracy**    | Exact match rate (categorical)                           |   ↑  |
-
----
+------------------------------------------------------------------------
 
 ## Additional Features
 
-* **Log-transform mean correction** for highly skewed numeric columns (`|skewness| > 1`)
-* **Min–max normalization** before metric comparison
-* **Parallel KNN** using all but one core (`FNN`, `foreach`, `doParallel`)
-* **Sequential fallback** for CRAN/test environments
-* **Density comparison plots** for visual validation
+-   **Split-metric evaluation:** numeric and categorical metrics handled separately.
+-   **C++ acceleration:** high-performance evaluation with safe NA handling.
+-   **Parallel KNN:** multi-core computation for mixed-type datasets.
+-   **Skewness-aware mean imputation:** applies log + geometric mean for \|skewness\| \> 1.
+-   **Reproducible pipeline:** consistent metrics across runs (`set.seed()` used).
+-   **Custom plotting:** side-by-side bar charts, density overlays, and panel comparisons.
 
----
-
-## Example Visuals
-
-**Barplot of RMSE Across Methods**
-
-```r
-plot_metrics(res, "RMSE")
-```
-
-**Faceted Metrics Panel**
-
-```r
-plot_metrics(res, "ALL")
-```
-
-**Density Comparison Example**
-
-```r
-plot_density_per_column(eval_list, "income")
-```
-
----
+------------------------------------------------------------------------
 
 ## Documentation
 
-* Function references:
-  `?evaluator`, `?plot_metrics`, `?suggest_best_method`
-* Vignettes:
-  `vignette("imputetoolkit")`
-* Tutorials and examples:
-  [pkgdown site](https://tanveer09.github.io/imputetoolkit/)
+-   Function references: `?evaluator`, `?plot_metrics`, `?suggest_best_method`
+-   Vignette tutorial: `vignette("imputetoolkit")`
+-   Online docs: [pkgdown site](https://tanveer09.github.io/imputetoolkit/)
 
----
+------------------------------------------------------------------------
 
 ## Development Notes
 
-* Fully **vectorized Rcpp** backend
-* S3-based front-end for clean extensibility
-* Unit-tested for reproducibility and accuracy
-* Modular design: new imputation algorithms can be added easily
-* Future extensions: missForest, EM, and deep autoencoder imputations
+-   Modular design: easy extension for new imputation algorithms (e.g. missForest, EM).
+-   Full `testthat` coverage with \>50 passing tests.
+-   Fully vectorized Rcpp implementation.
+-   Works seamlessly with `knitr` / `rmarkdown` for reproducible reports.
 
----
+------------------------------------------------------------------------
 
 ## License
 
 Released under the [MIT License](LICENSE).
 
----
+------------------------------------------------------------------------
 
 ## Citation
 
-> Singh, Tanveer. (2025). *imputetoolkit: An R Package for Evaluating Missing-Data Imputation Methods*.
-> Victoria University of Wellington.
+> Singh, Tanveer. (2025). *imputetoolkit: An R Package for Evaluating Missing Data Imputation Methods.* Victoria University of Wellington.
 
----
+------------------------------------------------------------------------
