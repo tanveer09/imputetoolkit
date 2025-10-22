@@ -2,20 +2,20 @@
 % Please edit documentation in R/imputer.R
 \name{summary.evaluator}
 \alias{summary.evaluator}
-\title{summary.evaluator}
+\title{Summarize Evaluator Results}
 \usage{
 \method{summary}{evaluator}(object, ...)
 }
 \arguments{
-\item{object}{An evaluator object}
+\item{object}{An object of class \code{evaluator}, typically returned by \code{evaluator()}.}
 
-\item{...}{Additional arguments (ignored)}
+\item{...}{Additional arguments passed to or from other methods (ignored).}
+}
+\value{
+A list containing:
+\item{numeric_metrics}{A data frame of numeric metric values per column.}
+\item{categorical_metrics}{A data frame of categorical metric values per column.}
 }
 \description{
-Summary method for evaluator objects
-}
-\seealso{
-\link[vignette]{imputetoolkit}
-For a complete tutorial, see the package vignette:
-\code{vignette("imputetoolkit")}
+Returns numeric and categorical metric tables for an evaluator object.
 }

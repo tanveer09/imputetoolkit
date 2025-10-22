@@ -10,14 +10,29 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// evaluate_imputation_split
+Rcpp::List evaluate_imputation_split(Rcpp::List true_data, Rcpp::List imputed_data, Rcpp::CharacterVector numeric_cols, Rcpp::CharacterVector categorical_cols, std::string method);
+RcppExport SEXP _imputetoolkit_evaluate_imputation_split(SEXP true_dataSEXP, SEXP imputed_dataSEXP, SEXP numeric_colsSEXP, SEXP categorical_colsSEXP, SEXP methodSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type true_data(true_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type imputed_data(imputed_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type numeric_cols(numeric_colsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type categorical_cols(categorical_colsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(evaluate_imputation_split(true_data, imputed_data, numeric_cols, categorical_cols, method));
+    return rcpp_result_gen;
+END_RCPP
+}
 // evaluate_imputation
-List evaluate_imputation(List true_data, List imputed_data, std::string method);
+Rcpp::List evaluate_imputation(Rcpp::List true_data, Rcpp::List imputed_data, std::string method);
 RcppExport SEXP _imputetoolkit_evaluate_imputation(SEXP true_dataSEXP, SEXP imputed_dataSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type true_data(true_dataSEXP);
-    Rcpp::traits::input_parameter< List >::type imputed_data(imputed_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type true_data(true_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type imputed_data(imputed_dataSEXP);
     Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
     rcpp_result_gen = Rcpp::wrap(evaluate_imputation(true_data, imputed_data, method));
     return rcpp_result_gen;
@@ -25,6 +40,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_imputetoolkit_evaluate_imputation_split", (DL_FUNC) &_imputetoolkit_evaluate_imputation_split, 5},
     {"_imputetoolkit_evaluate_imputation", (DL_FUNC) &_imputetoolkit_evaluate_imputation, 3},
     {NULL, NULL, 0}
 };

@@ -18,7 +18,7 @@ Prints a table, plots results, and returns the suggested method
 Evaluate results: print, plot, and suggest best method
 }
 \seealso{
-\link[vignette]{imputetoolkit}
+vignette("imputetoolkit")
 For a complete tutorial, see the package vignette:
 \code{vignette("imputetoolkit")}
 }

@@ -5,7 +5,9 @@ Authors@R:
     person("Tanveer", "Singh", email = "k.tanveer.singh@gmail.com", role = c("aut", "cre"))
 Description: Provides tools for injecting missingness into datasets,
     applying different imputation techniques, and evaluating their
-    performance using metrics implemented in Rcpp.
+    performance using metrics implemented in Rcpp. Includes a fast,
+    parallel KNN imputation based on the FNN package for numeric and
+    categorical data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -22,10 +24,14 @@ Imports:
     knitr,
     rlang,
     tidyr,
-    dplyr
+    dplyr,
+    FNN,
+    doParallel,
+    foreach
 Suggests: 
     caret,
     rmarkdown,
+    e1071,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

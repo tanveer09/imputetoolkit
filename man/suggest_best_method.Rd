@@ -2,7 +2,7 @@
 % Please edit documentation in R/imputer.R
 \name{suggest_best_method}
 \alias{suggest_best_method}
-\title{Suggest the best imputation method}
+\title{Suggest the best imputation method separately for numeric and categorical columns}
 \usage{
 suggest_best_method(x, metric = "ALL")
 }
@@ -10,18 +10,14 @@ suggest_best_method(x, metric = "ALL")
 \item{x}{A result list returned by evaluator()}
 
 \item{metric}{Character, metric to optimize
-("RMSE", "MAE", "R2", "KS", "Accuracy", or "ALL").
-If "ALL" or missing, the function compares across all metrics.}
+("RMSE", "MAE", "R2", "Correlation", "KS", "Accuracy", "Kappa",
+"F1", "MacroF1", "BalancedAccuracy", or "ALL").
+If "ALL" or missing, compares across all metrics.}
 }
 \value{
-If a single metric is provided, returns the best method (character).
-If "ALL", returns a named list showing the metrics associated with each best method.
+A list with two elements: \code{numeric} and \code{categorical},
+each containing the best methods based on the chosen metric(s).
 }
 \description{
-Suggest the best imputation method
-}
-\seealso{
-\link[vignette]{imputetoolkit}
-For a complete tutorial, see the package vignette:
-\code{vignette("imputetoolkit")}
+Suggest the best imputation method separately for numeric and categorical columns
 }

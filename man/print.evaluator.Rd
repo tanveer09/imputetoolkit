@@ -2,20 +2,21 @@
 % Please edit documentation in R/imputer.R
 \name{print.evaluator}
 \alias{print.evaluator}
-\title{print.evaluator}
+\title{Print Evaluator Results}
 \usage{
 \method{print}{evaluator}(x, ...)
 }
 \arguments{
-\item{x}{An evaluator object}
+\item{x}{An object of class \code{evaluator}, typically returned by \code{evaluator()}.}
 
-\item{...}{Additional arguments (ignored)}
+\item{...}{Additional arguments passed to or from other methods (ignored).}
+}
+\value{
+Invisibly returns the evaluator object.
 }
 \description{
-Print method for evaluator objects
+Prints numeric and categorical evaluation metrics for an evaluator object.
 }
-\seealso{
-\link[vignette]{imputetoolkit}
-For a complete tutorial, see the package vignette:
-\code{vignette("imputetoolkit")}
+\details{
+Print evaluator results separately for numeric and categorical
 }
