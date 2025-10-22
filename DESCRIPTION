@@ -1,9 +1,11 @@
 Package: imputetoolkit
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Imputation Toolkit for Evaluating Missing Data Methods
+Version: 0.1.0
 Authors@R: 
-    person("Tanveer", "Singh", , "k.tanveer.singh@gmail.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Tanveer", "Singh", email = "k.tanveer.singh@gmail.com", role = c("aut", "cre"))
+Description: Provides tools for injecting missingness into datasets,
+    applying different imputation techniques, and evaluating their
+    performance using metrics implemented in Rcpp.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -11,9 +13,18 @@ RoxygenNote: 7.3.3
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp
-Suggests: 
+    Rcpp,
+    utils,
+    stats,
+    mice,
+    readxl,
+    ggplot2,
     knitr,
+    rlang,
+    tidyr,
+    dplyr
+Suggests: 
+    caret,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

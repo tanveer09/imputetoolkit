@@ -3,12 +3,17 @@
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
 <url><loc>/articles/imputetoolkit-vignettes.html</loc></url>
+<url><loc>/articles/imputetoolkit.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/reference/evaluate_results.html</loc></url>
 <url><loc>/reference/evaluator.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/plot_metrics.html</loc></url>
 <url><loc>/reference/print.evaluator.html</loc></url>
+<url><loc>/reference/print_metrics.html</loc></url>
+<url><loc>/reference/suggest_best_method.html</loc></url>
 <url><loc>/reference/summary.evaluator.html</loc></url>
 </urlset>
 

@@ -1,3 +1,8 @@
 ^imputetoolkit\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^docs$
+^doc$
+^Meta$
+^_pkgdown\.yml$
+^pkgdown$

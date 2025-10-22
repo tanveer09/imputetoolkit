@@ -4,260 +4,375 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What the Package Does (One Line, Title Case) • imputetoolkit</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="What the Package Does (One Line, Title Case)">
-<meta property="og:description" content="What the package does (one paragraph).">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Imputation Toolkit for Evaluating Missing Data Methods • imputetoolkit</title>
+<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Imputation Toolkit for Evaluating Missing Data Methods">
+<meta name="description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp.">
+<meta property="og:description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp.">
 </head>
-<body data-spy="scroll" data-target="#toc">
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <div class="container template-home">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">imputetoolkit</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
-      </span>
-    </div>
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
+    <a class="navbar-brand me-2" href="index.html">imputetoolkit</a>
 
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="articles/imputetoolkit-vignettes.html">Vignettes from 'imputetoolkit' package</a>
-    </li>
-  </ul>
-</li>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/imputetoolkit.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
+      </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
-
-
-
-      </header><div class="row">
-  <div class="contents col-md-9">
-<div class="section level1">
-<div class="page-header"><h1 id="imputetoolkit">imputetoolkit<a class="anchor" aria-label="anchor" href="#imputetoolkit"></a>
+</nav><div class="container template-home">
+<div class="row">
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="imputetoolkit-">imputetoolkit <img src="https://www.r-project.org/logo/Rlogo.png" width="40" align="right"><a class="anchor" aria-label="anchor" href="#imputetoolkit-"></a>
 </h1></div>
-<p><em>Evaluate and compare multiple imputation methods with <strong>consistent metrics</strong> and an <strong>intuitive S3 interface</strong>.</em></p>
-<p><code>imputetoolkit</code> is an R package for evaluating the quality of data imputation methods.<br>
-This package implements an <strong>object-oriented S3 interface</strong> around an <code>evaluator</code> class that computes multiple metrics comparing imputed values with ground truth data.<br>
-It is designed to help researchers and practitioners benchmark different imputation strategies side-by-side, providing both per-column and global metrics such as RMSE, MAE, R², correlation recovery, KS statistic, and accuracy.<br>
-By wrapping results in an <code>evaluator</code> object, the package offers a consistent, user-friendly interface with familiar methods like <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>.</p>
-<hr>
+<p><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a> <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link"><img src="https://img.shields.io/badge/docs-pkgdown-blue" alt="pkgdown site"></a> <a href=""><img src="https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg" alt="Made with R"></a></p>
+<p>An R package for <strong>evaluating missing data imputation methods</strong> with a unified <strong>R + C++ backend</strong>. It provides a full pipeline for <strong>data cleaning, missingness injection, imputation, and evaluation</strong>, with support for <strong>multiple imputation methods</strong> and a suite of <strong>evaluation metrics</strong>.</p>
+<p>Implemented with an efficient <strong>Rcpp backend</strong> and an intuitive <strong>S3 interface</strong> (<code>print</code>, <code>summary</code>, <code>plot</code>), the package is designed for <strong>benchmarking imputation strategies</strong> and teaching/experimentation with missing data handling.</p>
 <div class="section level2">
-<h2 id="justification-for-oo-programming">Justification for OO Programming<a class="anchor" aria-label="anchor" href="#justification-for-oo-programming"></a>
+<h2 id="package-components">Package Components<a class="anchor" aria-label="anchor" href="#package-components"></a>
 </h2>
-<p>The <strong>evaluator</strong> function is a strong candidate for Object-Oriented programming because:</p>
-<ol style="list-style-type: decimal">
-<li>
-<strong>Encapsulation of Related Components</strong>
+<div class="section level3">
+<h3 id="core-structure">Core Structure<a class="anchor" aria-label="anchor" href="#core-structure"></a>
+</h3>
 <ul>
-<li>Imputation evaluation naturally produces multiple outputs: per-variable metrics (e.g., RMSE, MAE, R²), global summaries, and metadata (method used, variables evaluated).<br>
-</li>
-<li>OO design allows these pieces to live inside a single structured object (<code>class = "evaluator"</code>) instead of scattering them across lists or separate return values.</li>
+<li>
+<strong>DESCRIPTION / NAMESPACE</strong>: Standard package metadata, dependencies, and exported functions.</li>
+<li>
+<strong>R/</strong>: R interface functions, wrapper utilities, and S3 methods.</li>
+<li>
+<strong>src/</strong>: C++ backend (<code>evaluator.cpp</code>, <code>imputer.cpp</code>) compiled via Rcpp.</li>
+<li>
+<strong>tests/testthat/</strong>: Unit tests for R and C++ integration.</li>
+<li>
+<strong>vignettes/</strong>: Demonstration of package usage and design.</li>
+<li>
+<strong>inst/extdata/</strong>: Sample dataset (<code>sample_dataset.csv</code>).</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="r-files">R Files<a class="anchor" aria-label="anchor" href="#r-files"></a>
+</h3>
+<ul>
+<li>
+<strong>api.R</strong>
+<ul>
+<li>Entry point functions for users.</li>
 </ul>
 </li>
 <li>
-<strong>Clear and Familiar Workflow for Users</strong>
+<strong>imputer.R</strong>
 <ul>
-<li>Users can call familiar generic functions such as <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, or even <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> (if extended) on the evaluator object.<br>
+<li>Implements helper routines for imputation (mean, median, mode, MICE).</li>
+<li>
+<strong>evaluator()</strong>
+<ul>
+<li>Main pipeline: <code><a href="reference/evaluator.html">evaluator()</a></code><br>
 </li>
-<li>This design mirrors R’s built-in modeling ecosystem (<code>lm</code>, <code>glm</code>, <code>kmeans</code>), making it intuitive and lowering the learning curve.</li>
+<li>Steps:
+<ul>
+<li>Load dataset (CSV, TSV, TXT, Excel, RDS).<br>
+</li>
+<li>Clean categorical variables, inject controlled missingness.<br>
+</li>
+<li>Apply multiple imputation strategies: <strong>Mean/Mode</strong>, <strong>Median/Mode</strong>, <strong>MICE</strong>.<br>
+</li>
+<li>Collect true vs. imputed values.<br>
+</li>
+<li>Pass to the <strong>C++ backend evaluator</strong> for metric computation.<br>
+</li>
+</ul>
+</li>
+<li>Exports S3 methods:
+<ul>
+<li>
+<code>print.evaluator</code>: concise textual summary.<br>
+</li>
+<li>
+<code>summary.evaluator</code>: per-column + global metrics table.<br>
+</li>
+<li>
+<code>plot_metrics</code>: ggplot comparison of methods.<br>
+</li>
+<li>
+<code>print_metrics</code>: table-formatted comparison via knitr.<br>
+</li>
+<li>
+<code>suggest_best_method</code>: choose method by metric (min/max).<br>
+</li>
+<li>
+<code>evaluate_results</code>: wrapper to print, plot, and suggest best method.</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>
-<strong>Extensibility for Future Development</strong>
+<strong>RcppExports.R</strong>
 <ul>
-<li>New metrics (e.g., correlation recovery, KS statistic) can be easily added without changing how users interact with the object.<br>
+<li>Auto-generated glue between R and C++ (via Rcpp).</li>
+</ul>
 </li>
-<li>Additional methods (<code>plot.evaluator</code>, <code>predict.evaluator</code>) could later extend functionality without rewriting core code.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="c-files-src">C++ Files (src/)<a class="anchor" aria-label="anchor" href="#c-files-src"></a>
+</h3>
+<ul>
+<li>
+<strong>evaluator.cpp</strong>
+<ul>
+<li>Implements <code>evaluate_imputation()</code> (exported to R).<br>
+</li>
+<li>Defines an <strong>Evaluator class</strong> that computes:
+<ul>
+<li>RMSE, MAE, R², correlation, KS statistic, Accuracy.<br>
+</li>
+<li>Per-column metrics and global averages.<br>
+</li>
+</ul>
+</li>
+<li>Uses <strong>OOP encapsulation</strong> (private methods for column-level evaluation, public interface returning results).</li>
 </ul>
 </li>
 <li>
-<strong>Consistency Across Analyses</strong>
+<strong>imputer.cpp</strong> <em>(extension point)</em>
 <ul>
-<li>OO programming enforces a consistent structure: no matter which imputation method is evaluated, the output object behaves the same way.<br>
-</li>
-<li>This helps ensure reproducibility and comparability across datasets.</li>
+<li>Placeholder for additional algorithms (future work).</li>
 </ul>
 </li>
 <li>
-<strong>Alternatives Considered</strong>
+<strong>RcppExports.cpp</strong>
 <ul>
-<li>A <em>functional</em> approach (returning a plain list) would work, but it would force the user to manually extract fields like <code>$rmse</code> or <code>$r2</code>, making the workflow clunkier.<br>
-</li>
-<li>R6 or Reference Classes could also be used, but for statistical models in R, <strong>S3 classes are lightweight, idiomatic, and align with existing practices</strong>.</li>
+<li>Auto-generated bindings between R and C++.</li>
 </ul>
 </li>
-</ol>
-<p>Overall, the evaluator is a <strong>good candidate for OO programming</strong> because it bundles rich, structured outputs into an intuitive object, provides a user-friendly interface, and remains extensible for future enhancements.</p>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="testing-teststestthat">Testing (tests/testthat/)<a class="anchor" aria-label="anchor" href="#testing-teststestthat"></a>
+</h3>
+<ul>
+<li>
+<strong>test-evaluator.R</strong>
+<ul>
+<li>Tests the full pipeline with the synthetic dataset.<br>
+</li>
+<li>Verifies all methods (<code>mean_mode</code>, <code>median_mode</code>, <code>mice</code>).<br>
+</li>
+<li>Checks:
+<ul>
+<li>Metrics existence (<code>RMSE</code>, <code>MAE</code>, <code>R2</code>, <code>Correlation</code>, <code>KS</code>, <code>Accuracy</code>).<br>
+</li>
+<li>
+<code>print</code> and <code>summary</code> invisibility.<br>
+</li>
+<li>Wrapper functions (<code>extract_metrics</code>, <code>print_metrics</code>, <code>plot_metrics</code>, <code>suggest_best_method</code>).<br>
+</li>
+<li>Error handling (missing filename/data, unsupported file types, invalid metric names).<br>
+</li>
+<li>Reproducibility with fixed seed.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<strong>test-rcpp-evaluator.R</strong>
+<ul>
+<li>Tests <code>evaluate_imputation()</code> directly with toy numeric data.<br>
+</li>
+<li>Validates metrics computation, correct method labeling, and output structure.</li>
+</ul>
+</li>
+</ul>
+<p>Together, these tests ensure <strong>robustness, reproducibility, and informative error handling</strong>.</p>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="objects-and-methods">Objects and Methods<a class="anchor" aria-label="anchor" href="#objects-and-methods"></a>
-</h2>
-<ul>
-<li><p><strong><code><a href="reference/evaluator.html">evaluator()</a></code></strong><br>
-Constructor that creates an object of class <code>"evaluator"</code>.<br>
-Takes two named lists of numeric vectors (<code>true_data</code>, <code>imputed_data</code>) and a method name.</p></li>
-<li>
-<p><strong>S3 Methods</strong></p>
-<ul>
-<li>
-<code>print.evaluator(x)</code> – displays global evaluation metrics for an imputation method.</li>
-<li>
-<code>summary.evaluator(x)</code> – returns a <code>data.frame</code> with per-column metrics and global averages.</li>
-</ul>
-</li>
-<li>
-<p><strong>Metrics Computed</strong> For each column:</p>
-<ul>
-<li>Root Mean Squared Error (RMSE)</li>
-<li>Mean Absolute Error (MAE)</li>
-<li>R² (coefficient of determination)</li>
-<li>Correlation recovery</li>
-<li>Kolmogorov–Smirnov statistic (distribution similarity)</li>
-<li>Accuracy (proportion of masked values correctly recovered)</li>
-</ul>
-<p>These are also aggregated into <strong>global values</strong> stored in the <code>evaluator</code> object.</p>
-</li>
-</ul>
-<hr>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install directly from GitHub:</p>
+<p>Make sure you have R (≥ 4.0) and the <strong>devtools/remotes</strong> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit"</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="usage-example">Usage Example<a class="anchor" aria-label="anchor" href="#usage-example"></a>
-</h2>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span><span class="op">)</span></span></code></pre></div>
+<p>or</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">imputetoolkit</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>To include unit tests during installation and execute:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span>, INSTALL_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"--install-tests"</span><span class="op">)</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Ground truth and imputed data</span></span>
-<span><span class="va">true_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">30</span>, <span class="fl">40</span><span class="op">)</span>,</span>
-<span>  income <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50000</span>, <span class="fl">60000</span>, <span class="fl">70000</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">imputed_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">31</span>, <span class="fl">39</span><span class="op">)</span>,</span>
-<span>  income <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50000</span>, <span class="fl">61000</span>, <span class="fl">69000</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create evaluator object</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span><span class="va">true_data</span>, <span class="va">imputed_data</span>, method <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Inspect results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="output-example">Output (example)<a class="anchor" aria-label="anchor" href="#output-example"></a>
-</h2>
-<pre><code>Evaluation for method: mean
-Global Metrics:
-  RMSE       : 1.2909
-  MAE        : 1.0000
-  R^2        : 0.9456
-  Correlation: 0.9827
-  KS         : 0.2000
-  Accuracy   : 0.5000
-
-Per-column metrics available in result$metrics</code></pre>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="workflow">Workflow<a class="anchor" aria-label="anchor" href="#workflow"></a>
-</h2>
-<ol style="list-style-type: decimal">
-<li>
-<strong>Perform</strong> multiple imputations on your dataset (mean, median, kNN, MICE, etc.).</li>
-<li>
-<strong>Call</strong> <code>evaluator(true_data, imputed_data, method)</code> for each method.</li>
-<li>
-<strong>Collect</strong> results into a list and compare across methods.</li>
-<li>
-<strong>Use</strong> <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> for quick checks and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for detailed per-column analysis.</li>
-</ol>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="testing">Testing<a class="anchor" aria-label="anchor" href="#testing"></a>
-</h2>
-<p>Unit tests are provided under the <code>tests/testthat/</code> directory. To run all tests:</p>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://testthat.r-lib.org" class="external-link">testthat</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://testthat.r-lib.org/reference/test_package.html" class="external-link">test_package</a></span><span class="op">(</span><span class="st">"imputetoolkit"</span><span class="op">)</span></span></code></pre></div>
+<p>Then load:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">test</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>These tests check that:</p>
-<ul>
-<li>Objects of class <code>"evaluator"</code> are created correctly.</li>
-<li>Metrics are computed accurately for numeric data.</li>
-<li>Errors are raised for invalid inputs (e.g., mismatched keys, NA/Inf values).</li>
-<li>S3 methods (print, summary) return expected outputs.</li>
-</ul>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">imputetoolkit</span><span class="op">)</span></span></code></pre></div>
 <hr>
+</div>
+<div class="section level2">
+<h2 id="sample-dataset">Sample Dataset<a class="anchor" aria-label="anchor" href="#sample-dataset"></a>
+</h2>
+<p>The package ships with a <strong>synthetic mixed-type dataset</strong> located at:</p>
+<pre><code><span><span class="va">inst</span><span class="op">/</span><span class="va">extdata</span><span class="op">/</span><span class="va">sample_dataset.csv</span></span></code></pre>
+<p>This dataset contains <strong>numeric and categorical columns</strong> with controlled missingness, useful for benchmarking imputation strategies.</p>
+<div class="section level3">
+<h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"sample_dataset.csv"</span>, package <span class="op">=</span> <span class="st">"imputetoolkit"</span><span class="op">)</span></span>
+<span><span class="va">raw_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">filename</span>, stringsAsFactors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">raw_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span>
+<span><span class="co">#metrics_df &lt;- extract_metrics(res)</span></span>
+<span><span class="fu"><a href="reference/print_metrics.html">print_metrics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"RMSE"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"Accuracy"</span>, higher_better <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="usage-examples">Usage Examples<a class="anchor" aria-label="anchor" href="#usage-examples"></a>
+</h2>
+<div class="section level3">
+<h3 id="run-evaluator">Run Evaluator<a class="anchor" aria-label="anchor" href="#run-evaluator"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"sample_dataset.csv"</span>, package <span class="op">=</span> <span class="st">"imputetoolkit"</span><span class="op">)</span></span>
+<span><span class="va">raw_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">filename</span>, stringsAsFactors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">raw_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="print--summarize">Print &amp; Summarize<a class="anchor" aria-label="anchor" href="#print--summarize"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output:</em></p>
+<pre><code>Evaluation for method: Mean/Mode
+Global Metrics:
+  RMSE       : 7556.136
+  MAE        : 6543.196
+  R^2        : -1.2422
+  Correlation: NA
+  KS         : 0.686
+  Accuracy   : 0.0992 </code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output (example table):</em></p>
+<pre><code>        Column         RMSE          MAE            R2 Correlation        KS   Accuracy
+1          age    17.347819    14.787250 -0.0025988869          NA 0.5555556 0.00000000
+2       income 37756.906642 32695.668553 -0.0086117249          NA 0.5567010 0.00000000
+3        color     3.364834     3.056842 -4.7245331051          NA 1.0000000 0.00000000
+4    education     1.663998     1.284444 -1.4742295337          NA 0.7077778 0.29222222
+5 satisfaction     1.398599     1.182745 -0.0009871836          NA 0.6101961 0.20392157
+6       GLOBAL  7556.136378  6543.195967 -1.2421920868          NA 0.6860461 0.09922876</code></pre>
+</div>
+<div class="section level3">
+<h3 id="compare-methods">Compare Methods<a class="anchor" aria-label="anchor" href="#compare-methods"></a>
+</h3>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Tabular comparison</span></span>
+<span><span class="fu"><a href="reference/print_metrics.html">print_metrics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output (knitr_kable preview):</em></p>
+<pre><code>
+| Method      |      RMSE |      MAE |      R2 | Correlation |     KS | Accuracy |
+|:------------|----------:|---------:|--------:|------------:|-------:|---------:|
+| Mean/Mode   |  7556.136 | 6543.196 | -1.2422 |          NA | 0.6860 |   0.0992 |
+| Median/Mode |  7563.103 | 6551.639 | -1.2424 |          NA | 0.6827 |   0.1033 |
+| MICE        | 10920.341 | 9001.991 | -1.5667 |     -0.0465 | 0.2071 |   0.1017 |</code></pre>
+</div>
+<div class="section level3">
+<h3 id="comparison-of-imputation-methods">Comparison of Imputation Methods<a class="anchor" aria-label="anchor" href="#comparison-of-imputation-methods"></a>
+</h3>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot a single metric (RMSE across methods)</span></span>
+<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"RMSE"</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output (saved plot):</em> <img src="inst/extdata/figures/plot_rmse.png" alt="RMSE Comparison"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot all metrics in separate panels</span></span>
+<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output (saved plot):</em> <img src="inst/extdata/figures/plot_all.png" alt="All Metrics Comparison"></p>
+</div>
+<div class="section level3">
+<h3 id="suggest-best-method">Suggest Best Method<a class="anchor" aria-label="anchor" href="#suggest-best-method"></a>
+</h3>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Suggest best method for a single metric</span></span>
+<span><span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, metric <span class="op">=</span> <span class="st">"RMSE"</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output:</em></p>
+<pre><code>Suggested best imputation method based on RMSE: Mean/Mode
+[1] "Mean/Mode"</code></pre>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Suggest best methods across all metrics (grouped summary)</span></span>
+<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, metric <span class="op">=</span> <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
+<p><em>Output:</em></p>
+<pre><code>Suggested best imputation methods across metrics:
+    As per R2, KS, RMSE, MAE metrics: Mean/Mode
+    As per Accuracy metrics: Median/Mode</code></pre>
+<p><em>Return object (list):</em></p>
+<pre><code>$`Mean/Mode`
+[1] "R2"   "KS"   "RMSE" "MAE"
+
+$`Median/Mode`
+[1] "Accuracy"</code></pre>
+<hr>
+</div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>All functions are documented with <strong>Roxygen2</strong>. To rebuild documentation, run:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Help pages are available for all major functions:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">?</span><span class="va">evaluator</span></span>
-<span><span class="op">?</span><span class="va">print.evaluator</span></span>
-<span><span class="op">?</span><span class="va">summary.evaluator</span></span></code></pre></div>
+<ul>
+<li>Function manuals: <code><a href="reference/evaluator.html">?evaluator</a></code>, <code><a href="reference/plot_metrics.html">?plot_metrics</a></code>, etc.</li>
+<li>Vignettes: under <code>vignettes/</code> (in progress).</li>
+<li>HTML docs: pkgdown site at <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link uri">https://tanveer09.github.io/imputetoolkit/</a>
+</li>
+</ul>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="llm-disclosure">LLM Disclosure<a class="anchor" aria-label="anchor" href="#llm-disclosure"></a>
+<h2 id="development-notes">Development Notes<a class="anchor" aria-label="anchor" href="#development-notes"></a>
 </h2>
-<p>Some parts of this package — including <strong>documentation drafting, README preparation, and sections of the R/C++ code (e.g., error handling and function scaffolding)</strong>, were assisted by <strong>ChatGPT (OpenAI)</strong>.</p>
-<p>All generated content was <strong>reviewed, debugged, and adapted</strong> before inclusion in the final submission.</p>
+<ul>
+<li>C++ backend (<code>Evaluator</code> class) demonstrates <strong>OOP encapsulation</strong>.</li>
+<li>S3 interface on the R side for consistent <code>print</code>, <code>summary</code>, and plotting.</li>
+<li>Roadmap includes adding <strong>kNN</strong> and <strong>missForest</strong> imputations.</li>
+<li>Current release: <strong>core pipeline stable + tested</strong>.</li>
+</ul>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h2>
+<p>This package is released under the <a href="LICENSE">MIT License</a>.</p>
+<hr>
 </div>
 </div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+  </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
@@ -282,23 +397,20 @@ Per-column metrics available in result$metrics</code></pre>
 
 
 
-  </div>
+  </aside>
 </div>
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by Tanveer Singh.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by Tanveer Singh.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
-
 
 
 

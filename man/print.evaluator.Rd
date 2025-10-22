@@ -9,8 +9,13 @@
 \arguments{
 \item{x}{An evaluator object}
 
-\item{...}{further arguments}
+\item{...}{Additional arguments (ignored)}
 }
 \description{
 Print method for evaluator objects
+}
+\seealso{
+\link[vignette]{imputetoolkit}
+For a complete tutorial, see the package vignette:
+\code{vignette("imputetoolkit")}
 }
