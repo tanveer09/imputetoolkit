@@ -2,9 +2,7 @@
 #'
 #' Full pipeline: data cleaning, missingness injection, imputation, and evaluation.
 #'
-#' @param data A data.frame that has already been loaded in R. Optional if `filename` is provided.
-#' @param filename Path to a data file (CSV, TSV, TXT, XLSX, XLS, RDS). Optional if `data` is provided.
-
+#' @param data is either a data.frame that has already been loaded in R. or is the filename to a data file (CSV, TSV, TXT, XLSX, XLS, RDS)
 #' @return A list of evaluator objects (one per imputation method).
 #' @seealso vignette("imputetoolkit")
 #' For a complete tutorial, see the package vignette:
@@ -42,32 +40,41 @@
 #' res <- evaluator(data = df)
 #' print(res$mean_mode)
 #' }
-evaluator <- function(data = NULL, filename = NULL) {
+evaluator <- function(data = NULL) {
   set.seed(123) # reproducibility
 
   ##########################
   # ---- 0. Load data ---- #
   ##########################
 
-  if (!is.null(data)) {
-    raw_data <- data
-  } else if (!is.null(filename)) {
-    file_ext <- tools::file_ext(filename)
+  raw_data <- data
+
+  if (is.character(data)) {
+    file_ext <- tools::file_ext(data)
 
     if (file_ext == "csv") {
-      raw_data <- utils::read.csv(filename, stringsAsFactors = TRUE)
+      raw_data <- utils::read.csv(data, stringsAsFactors = TRUE)
     } else if (file_ext %in% c("tsv", "txt")) {
-      raw_data <- utils::read.delim(filename, stringsAsFactors = TRUE)
+      raw_data <- utils::read.delim(data, stringsAsFactors = TRUE)
     } else if (file_ext %in% c("xlsx", "xls")) {
-      raw_data <- readxl::read_excel(filename)
+      raw_data <- readxl::read_excel(data)
     } else if (file_ext %in% c("rds")) {
-      raw_data <- readRDS(filename)
+      raw_data <- readRDS(data)
     } else {
       stop("Unsupported file type: ", file_ext)
     }
-  } else {
-    stop("Please provide either a filename or a data.frame.")
   }
+
+  if (is.null(data)) {
+    stop("No input provided. Please pass either:
+  - a data.frame (e.g., evaluator(mydata)), or
+  - a file path (e.g., evaluator('data.csv')).")
+  }
+
+  if (!is.data.frame(raw_data)) {
+    stop("Input must resolve to a data.frame after loading.")
+  }
+
 
   # Convert empty strings to NA for categorical cols
   for (col in names(raw_data)) {
@@ -75,12 +82,19 @@ evaluator <- function(data = NULL, filename = NULL) {
       raw_data[[col]][raw_data[[col]] == ""] <- NA
     }
   }
+
   #########################################
   # ---- 1. Inject extra missingness ---- #
   #########################################
   # --- Identify columns with missing values ---
   raw_data_col_missingness <- colSums(is.na(raw_data)) / nrow(raw_data) * 100
   raw_data_col_missingness <- raw_data_col_missingness[raw_data_col_missingness > 0]
+
+  # ---- Stop if no missing values found ----
+  if (length(raw_data_col_missingness) == 0) {
+    stop("No missing values detected in the dataset.
+       Please provide a dataset with at least one missing value for imputation.")
+  }
 
   # --- Filter numeric columns among those with missing values ---
   numeric_missing_cols <- names(raw_data_col_missingness)[
@@ -181,9 +195,21 @@ evaluator <- function(data = NULL, filename = NULL) {
   if (!requireNamespace("mice", quietly = TRUE)) {
     stop("Package 'mice' needed for this function to work. Please install it.")
   }
-  mice_imp <- mice::mice(raw_data_modified, m = 1, method = "pmm", maxit = 5, seed = 123)
-  data_mice <- mice::complete(mice_imp)
 
+  data_mice <- NULL
+  if (ncol(raw_data_modified) >= 2) {
+    tryCatch({
+      mice_imp <- mice::mice(raw_data_modified, m = 1, method = "pmm", maxit = 5, seed = 123, printFlag = FALSE)
+      data_mice <- mice::complete(mice_imp)
+    }, error = function(e) {
+      warning("MICE imputation skipped: ", conditionMessage(e))
+      # fallback: use median/mode as a safe default
+      data_mice <- data_median
+    })
+  } else {
+    warning("MICE skipped because dataset has fewer than 2 columns.")
+    data_mice <- data_median
+  }
 
   ##############################################
   # ---- KNN Imputation (robust version) ---- #

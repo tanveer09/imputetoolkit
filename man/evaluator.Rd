@@ -4,12 +4,10 @@
 \alias{evaluator}
 \title{evaluator}
 \usage{
-evaluator(data = NULL, filename = NULL)
+evaluator(data = NULL)
 }
 \arguments{
-\item{data}{A data.frame that has already been loaded in R. Optional if \code{filename} is provided.}
-
-\item{filename}{Path to a data file (CSV, TSV, TXT, XLSX, XLS, RDS). Optional if \code{data} is provided.}
+\item{data}{is either a data.frame that has already been loaded in R. or is the filename to a data file (CSV, TSV, TXT, XLSX, XLS, RDS)}
 }
 \value{
 A list of evaluator objects (one per imputation method).

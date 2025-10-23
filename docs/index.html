@@ -6,23 +6,30 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Imputation Toolkit for Evaluating Missing Data Methods • imputetoolkit</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Imputation Toolkit for Evaluating Missing Data Methods">
-<meta name="description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp.">
-<meta property="og:description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
+<meta property="og:title" content="Imputation Toolkit for Evaluating Missing Data Methods">
+<meta name="description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp. Includes a fast, parallel KNN imputation based on the FNN package for numeric and categorical data.">
+<meta property="og:description" content="Provides tools for injecting missingness into datasets, applying different imputation techniques, and evaluating their performance using metrics implemented in Rcpp. Includes a fast, parallel KNN imputation based on the FNN package for numeric and categorical data.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">imputetoolkit</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +45,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tanveer09/imputetoolkit/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -45,311 +53,459 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="imputetoolkit-">imputetoolkit <img src="https://www.r-project.org/logo/Rlogo.png" width="40" align="right"><a class="anchor" aria-label="anchor" href="#imputetoolkit-"></a>
+  <main id="main" class="col-md-9"><div class="page-header"><h1 style="font-size:2.6rem; font-weight:700; margin-bottom:0.3em;">
+imputetoolkit <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link"> <img src="reference/figures/imputetoolkit_logo.png" align="right" height="120" width="120" style="margin-top:-5px;"></a>
 </h1></div>
-<p><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a> <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link"><img src="https://img.shields.io/badge/docs-pkgdown-blue" alt="pkgdown site"></a> <a href=""><img src="https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg" alt="Made with R"></a></p>
-<p>An R package for <strong>evaluating missing data imputation methods</strong> with a unified <strong>R + C++ backend</strong>. It provides a full pipeline for <strong>data cleaning, missingness injection, imputation, and evaluation</strong>, with support for <strong>multiple imputation methods</strong> and a suite of <strong>evaluation metrics</strong>.</p>
-<p>Implemented with an efficient <strong>Rcpp backend</strong> and an intuitive <strong>S3 interface</strong> (<code>print</code>, <code>summary</code>, <code>plot</code>), the package is designed for <strong>benchmarking imputation strategies</strong> and teaching/experimentation with missing data handling.</p>
+<!-- badges: start -->
+
 <div class="section level2">
-<h2 id="package-components">Package Components<a class="anchor" aria-label="anchor" href="#package-components"></a>
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<div class="section level3">
-<h3 id="core-structure">Core Structure<a class="anchor" aria-label="anchor" href="#core-structure"></a>
-</h3>
-<ul>
-<li>
-<strong>DESCRIPTION / NAMESPACE</strong>: Standard package metadata, dependencies, and exported functions.</li>
-<li>
-<strong>R/</strong>: R interface functions, wrapper utilities, and S3 methods.</li>
-<li>
-<strong>src/</strong>: C++ backend (<code>evaluator.cpp</code>, <code>imputer.cpp</code>) compiled via Rcpp.</li>
-<li>
-<strong>tests/testthat/</strong>: Unit tests for R and C++ integration.</li>
-<li>
-<strong>vignettes/</strong>: Demonstration of package usage and design.</li>
-<li>
-<strong>inst/extdata/</strong>: Sample dataset (<code>sample_dataset.csv</code>).</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="r-files">R Files<a class="anchor" aria-label="anchor" href="#r-files"></a>
-</h3>
-<ul>
-<li>
-<strong>api.R</strong>
-<ul>
-<li>Entry point functions for users.</li>
-</ul>
-</li>
-<li>
-<strong>imputer.R</strong>
-<ul>
-<li>Implements helper routines for imputation (mean, median, mode, MICE).</li>
-<li>
-<strong>evaluator()</strong>
-<ul>
-<li>Main pipeline: <code><a href="reference/evaluator.html">evaluator()</a></code><br>
-</li>
-<li>Steps:
-<ul>
-<li>Load dataset (CSV, TSV, TXT, Excel, RDS).<br>
-</li>
-<li>Clean categorical variables, inject controlled missingness.<br>
-</li>
-<li>Apply multiple imputation strategies: <strong>Mean/Mode</strong>, <strong>Median/Mode</strong>, <strong>MICE</strong>.<br>
-</li>
-<li>Collect true vs. imputed values.<br>
-</li>
-<li>Pass to the <strong>C++ backend evaluator</strong> for metric computation.<br>
-</li>
-</ul>
-</li>
-<li>Exports S3 methods:
-<ul>
-<li>
-<code>print.evaluator</code>: concise textual summary.<br>
-</li>
-<li>
-<code>summary.evaluator</code>: per-column + global metrics table.<br>
-</li>
-<li>
-<code>plot_metrics</code>: ggplot comparison of methods.<br>
-</li>
-<li>
-<code>print_metrics</code>: table-formatted comparison via knitr.<br>
-</li>
-<li>
-<code>suggest_best_method</code>: choose method by metric (min/max).<br>
-</li>
-<li>
-<code>evaluate_results</code>: wrapper to print, plot, and suggest best method.</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>
-<strong>RcppExports.R</strong>
-<ul>
-<li>Auto-generated glue between R and C++ (via Rcpp).</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="c-files-src">C++ Files (src/)<a class="anchor" aria-label="anchor" href="#c-files-src"></a>
-</h3>
-<ul>
-<li>
-<strong>evaluator.cpp</strong>
-<ul>
-<li>Implements <code>evaluate_imputation()</code> (exported to R).<br>
-</li>
-<li>Defines an <strong>Evaluator class</strong> that computes:
-<ul>
-<li>RMSE, MAE, R², correlation, KS statistic, Accuracy.<br>
-</li>
-<li>Per-column metrics and global averages.<br>
-</li>
-</ul>
-</li>
-<li>Uses <strong>OOP encapsulation</strong> (private methods for column-level evaluation, public interface returning results).</li>
-</ul>
-</li>
-<li>
-<strong>imputer.cpp</strong> <em>(extension point)</em>
-<ul>
-<li>Placeholder for additional algorithms (future work).</li>
-</ul>
-</li>
-<li>
-<strong>RcppExports.cpp</strong>
-<ul>
-<li>Auto-generated bindings between R and C++.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="testing-teststestthat">Testing (tests/testthat/)<a class="anchor" aria-label="anchor" href="#testing-teststestthat"></a>
-</h3>
-<ul>
-<li>
-<strong>test-evaluator.R</strong>
-<ul>
-<li>Tests the full pipeline with the synthetic dataset.<br>
-</li>
-<li>Verifies all methods (<code>mean_mode</code>, <code>median_mode</code>, <code>mice</code>).<br>
-</li>
-<li>Checks:
-<ul>
-<li>Metrics existence (<code>RMSE</code>, <code>MAE</code>, <code>R2</code>, <code>Correlation</code>, <code>KS</code>, <code>Accuracy</code>).<br>
-</li>
-<li>
-<code>print</code> and <code>summary</code> invisibility.<br>
-</li>
-<li>Wrapper functions (<code>extract_metrics</code>, <code>print_metrics</code>, <code>plot_metrics</code>, <code>suggest_best_method</code>).<br>
-</li>
-<li>Error handling (missing filename/data, unsupported file types, invalid metric names).<br>
-</li>
-<li>Reproducibility with fixed seed.</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>
-<strong>test-rcpp-evaluator.R</strong>
-<ul>
-<li>Tests <code>evaluate_imputation()</code> directly with toy numeric data.<br>
-</li>
-<li>Validates metrics computation, correct method labeling, and output structure.</li>
-</ul>
-</li>
-</ul>
-<p>Together, these tests ensure <strong>robustness, reproducibility, and informative error handling</strong>.</p>
+<p><strong>imputetoolkit</strong> is an R package for <strong>evaluating and benchmarking missing-data imputation techniques</strong> using a unified <strong>R + C++ backend</strong>.</p>
+<p>It automates the full workflow of <strong>data preparation → missingness injection → imputation → metric-based evaluation → visualization</strong>, providing both <strong>numeric</strong> and <strong>categorical</strong> assessments.</p>
+<p>With parallel computation, C++ acceleration, and an intuitive S3 interface (<code>print</code>, <code>summary</code>, <code>plot</code>), the package allows users to <strong>quantitatively justify imputation strategy choices</strong>.</p>
 <hr>
 </div>
+<div class="section level2">
+<h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="30%">
+<col width="69%">
+</colgroup>
+<thead><tr class="header">
+<th>Category</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Imputation Methods</strong></td>
+<td>Mean/Mode (skewness-aware log transform), Median/Mode, MICE, and mixed-type KNN (parallelized)</td>
+</tr>
+<tr class="even">
+<td><strong>Evaluation Metrics (Rcpp)</strong></td>
+<td>Split into: <br>• <em>Numeric:</em> RMSE, MAE, R², Correlation, KS <br>• <em>Categorical:</em> Accuracy, Kappa, F1, MacroF1, Balanced Accuracy</td>
+</tr>
+<tr class="odd">
+<td><strong>Parallelization</strong></td>
+<td>Multi-core KNN imputation using <code>FNN</code>, <code>foreach</code>, and <code>doParallel</code>
+</td>
+</tr>
+<tr class="even">
+<td><strong>Scaling</strong></td>
+<td>Min-max scaling of numeric columns for fair metric comparison</td>
+</tr>
+<tr class="odd">
+<td><strong>Visualization</strong></td>
+<td>ggplot2-based metric and density plots (per method or all methods)</td>
+</tr>
+<tr class="even">
+<td><strong>Recommendation</strong></td>
+<td>Automatic “best-method” suggestions per metric type</td>
+</tr>
+<tr class="odd">
+<td><strong>Reproducibility</strong></td>
+<td>Deterministic pipeline with fixed seeds and consistent outputs</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="package-structure">Package Structure<a class="anchor" aria-label="anchor" href="#package-structure"></a>
+</h2>
+<pre><code>
+imputetoolkit/
+├── DESCRIPTION
+├── NAMESPACE
+├── R/
+│   ├── evaluator.R             # main pipeline + S3 interface
+│   ├── plot_metrics.R          # plotting utilities
+│   ├── print_summary.R         # print() &amp; summary() methods
+│   ├── utils.R                 # helper utilities
+│   └── RcppExports.R           # glue between R and C++
+├── src/
+│   ├── evaluate_imputation_split.cpp   # C++ backend for numeric + categorical metrics
+│   ├── RcppExports.cpp
+│   └── (future extensions)
+├── inst/extdata/               # sample datasets
+├── vignettes/                  # user guide (html_vignette)
+└── tests/testthat/             # full unit test suite</code></pre>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
+</h2>
+<div class="section level3">
+<h3 id="evaluator">
+<code>evaluator()</code><a class="anchor" aria-label="anchor" href="#evaluator"></a>
+</h3>
+<p>Main pipeline that executes: 1. Data loading or input validation<br>
+2. Missingness injection<br>
+3. Imputation via all four methods<br>
+4. Metric evaluation (numeric &amp; categorical)<br>
+5. Return of structured <code>evaluator</code> objects</p>
+<p><strong>Returns:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">mean_mode</span>, <span class="va">median_mode</span>, <span class="va">mice</span>, <span class="va">knn</span><span class="op">)</span></span></code></pre></div>
+<p>Each object contains:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="sc">$</span>method</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="sc">$</span>metrics_numeric</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="sc">$</span>metrics_categorical</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="s3-methods">S3 Methods<a class="anchor" aria-label="anchor" href="#s3-methods"></a>
+</h3>
+<ul>
+<li>
+<code><a href="reference/print.evaluator.html">print.evaluator()</a></code> – concise summary by metric type</li>
+<li>
+<code><a href="reference/summary.evaluator.html">summary.evaluator()</a></code> – per-column and aggregated results</li>
+<li>
+<code><a href="reference/print_metrics.html">print_metrics()</a></code> – combined table across all methods</li>
+<li>
+<code><a href="reference/plot_metrics.html">plot_metrics()</a></code> – ggplot visualization for any metric</li>
+<li>
+<code><a href="reference/suggest_best_method.html">suggest_best_method()</a></code> – identifies top-performing methods</li>
+<li>
+<code><a href="reference/evaluate_results.html">evaluate_results()</a></code> – runs print + plot + recommendation</li>
+<li>
+<code><a href="reference/get_eval_list.html">get_eval_list()</a></code> – extracts true/imputed pairs for density plots</li>
+<li>
+<code><a href="reference/plot_density_per_column.html">plot_density_per_column()</a></code> / <code><a href="reference/plot_density_all.html">plot_density_all()</a></code> – visualize true vs imputed distributions</li>
+</ul>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="c-backend-evaluate_imputation_splitcpp">C++ Backend (<code>evaluate_imputation_split.cpp</code>)<a class="anchor" aria-label="anchor" href="#c-backend-evaluate_imputation_splitcpp"></a>
+</h2>
+<p>Efficient Rcpp backend that calculates both <strong>numeric</strong> and <strong>categorical</strong> metrics in one pass.</p>
+<div class="section level3">
+<h3 id="numeric-metrics">Numeric metrics<a class="anchor" aria-label="anchor" href="#numeric-metrics"></a>
+</h3>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Metric</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">RMSE</td>
+<td align="left">Root Mean Square Error</td>
+</tr>
+<tr class="even">
+<td align="left">MAE</td>
+<td align="left">Mean Absolute Error</td>
+</tr>
+<tr class="odd">
+<td align="left">R²</td>
+<td align="left">Coefficient of Determination</td>
+</tr>
+<tr class="even">
+<td align="left">Correlation</td>
+<td align="left">Pearson correlation</td>
+</tr>
+<tr class="odd">
+<td align="left">KS</td>
+<td align="left">Kolmogorov–Smirnov statistic</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="categorical-metrics">Categorical metrics<a class="anchor" aria-label="anchor" href="#categorical-metrics"></a>
+</h3>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Metric</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Accuracy</td>
+<td align="left">Exact match ratio</td>
+</tr>
+<tr class="even">
+<td align="left">Kappa</td>
+<td align="left">Chance-adjusted agreement</td>
+</tr>
+<tr class="odd">
+<td align="left">F1</td>
+<td align="left">Micro-F1 score</td>
+</tr>
+<tr class="even">
+<td align="left">MacroF1</td>
+<td align="left">Mean F1 over all classes</td>
+</tr>
+<tr class="odd">
+<td align="left">BalancedAccuracy</td>
+<td align="left">Mean recall per class</td>
+</tr>
+</tbody>
+</table>
+<p>All metrics are implemented in C++ using <code>Rcpp</code>, ensuring fast and stable performance.</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="unit-tests-teststestthat">Unit Tests (<code>tests/testthat/</code>)<a class="anchor" aria-label="anchor" href="#unit-tests-teststestthat"></a>
+</h2>
+<p>Comprehensive suite covering:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="66%">
+</colgroup>
+<thead><tr class="header">
+<th>Test Area</th>
+<th>Focus</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Pipeline</strong></td>
+<td>Verifies all 4 imputation methods run successfully</td>
+</tr>
+<tr class="even">
+<td><strong>S3 Methods</strong></td>
+<td>
+<code>print</code>, <code>summary</code>, and invisibility checks</td>
+</tr>
+<tr class="odd">
+<td><strong>Wrapper Functions</strong></td>
+<td>
+<code>extract_metrics</code>, <code>plot_metrics</code>, <code>suggest_best_method</code>
+</td>
+</tr>
+<tr class="even">
+<td><strong>Error Handling</strong></td>
+<td>Invalid inputs, unsupported file formats</td>
+</tr>
+<tr class="odd">
+<td><strong>Reproducibility</strong></td>
+<td>Consistent metrics with fixed seed</td>
+</tr>
+<tr class="even">
+<td><strong>Parallel KNN</strong></td>
+<td>Multi-core execution validation</td>
+</tr>
+<tr class="odd">
+<td><strong>C++ Evaluator</strong></td>
+<td>Direct unit tests for numeric/categorical metrics</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<pre><code>[ FAIL 0 | WARN 1 | SKIP 0 | PASS 76 ]</code></pre>
+<hr>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Make sure you have R (≥ 4.0) and the <strong>devtools/remotes</strong> package:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span><span class="op">)</span></span></code></pre></div>
-<p>or</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>To include unit tests during installation and execute:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@draft"</span>, INSTALL_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"--install-tests"</span><span class="op">)</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://testthat.r-lib.org" class="external-link">testthat</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://testthat.r-lib.org/reference/test_package.html" class="external-link">test_package</a></span><span class="op">(</span><span class="st">"imputetoolkit"</span><span class="op">)</span></span></code></pre></div>
-<p>Then load:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">imputetoolkit</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="sample-dataset">Sample Dataset<a class="anchor" aria-label="anchor" href="#sample-dataset"></a>
-</h2>
-<p>The package ships with a <strong>synthetic mixed-type dataset</strong> located at:</p>
-<pre><code><span><span class="va">inst</span><span class="op">/</span><span class="va">extdata</span><span class="op">/</span><span class="va">sample_dataset.csv</span></span></code></pre>
-<p>This dataset contains <strong>numeric and categorical columns</strong> with controlled missingness, useful for benchmarking imputation strategies.</p>
+<p>Requires <strong>R ≥ 4.0</strong>, Rtools (Windows), and compilation support for Rcpp.</p>
 <div class="section level3">
-<h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tanveer09/imputetoolkit@main"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, INSTALL_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"--install-tests"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"sample_dataset.csv"</span>, package <span class="op">=</span> <span class="st">"imputetoolkit"</span><span class="op">)</span></span>
-<span><span class="va">raw_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">filename</span>, stringsAsFactors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">raw_data</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span>
-<span><span class="co">#metrics_df &lt;- extract_metrics(res)</span></span>
-<span><span class="fu"><a href="reference/print_metrics.html">print_metrics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"RMSE"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"Accuracy"</span>, higher_better <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tanveer09/imputetoolkit" class="external-link">imputetoolkit</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="browse-documentation">Browse documentation<a class="anchor" aria-label="anchor" href="#browse-documentation"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"imputetoolkit"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="usage-examples">Usage Examples<a class="anchor" aria-label="anchor" href="#usage-examples"></a>
+<h2 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
 </h2>
 <div class="section level3">
-<h3 id="run-evaluator">Run Evaluator<a class="anchor" aria-label="anchor" href="#run-evaluator"></a>
-</h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"sample_dataset.csv"</span>, package <span class="op">=</span> <span class="st">"imputetoolkit"</span><span class="op">)</span></span>
-<span><span class="va">raw_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">filename</span>, stringsAsFactors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">raw_data</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="print--summarize">Print &amp; Summarize<a class="anchor" aria-label="anchor" href="#print--summarize"></a>
+<h3 id="id_1-load-data">1. Load Data<a class="anchor" aria-label="anchor" href="#id_1-load-data"></a>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output:</em></p>
-<pre><code>Evaluation for method: Mean/Mode
-Global Metrics:
-  RMSE       : 7556.136
-  MAE        : 6543.196
-  R^2        : -1.2422
-  Correlation: NA
-  KS         : 0.686
-  Accuracy   : 0.0992 </code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output (example table):</em></p>
-<pre><code>        Column         RMSE          MAE            R2 Correlation        KS   Accuracy
-1          age    17.347819    14.787250 -0.0025988869          NA 0.5555556 0.00000000
-2       income 37756.906642 32695.668553 -0.0086117249          NA 0.5567010 0.00000000
-3        color     3.364834     3.056842 -4.7245331051          NA 1.0000000 0.00000000
-4    education     1.663998     1.284444 -1.4742295337          NA 0.7077778 0.29222222
-5 satisfaction     1.398599     1.182745 -0.0009871836          NA 0.6101961 0.20392157
-6       GLOBAL  7556.136378  6543.195967 -1.2421920868          NA 0.6860461 0.09922876</code></pre>
+<code class="sourceCode R"><span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"synthetic_mixed_dataset.csv"</span>, package <span class="op">=</span> <span class="st">"imputetoolkit"</span><span class="op">)</span></span>
+<span><span class="va">raw_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">file</span>, stringsAsFactors <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="compare-methods">Compare Methods<a class="anchor" aria-label="anchor" href="#compare-methods"></a>
+<h3 id="id_2-run-the-evaluator">2. Run the Evaluator<a class="anchor" aria-label="anchor" href="#id_2-run-the-evaluator"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/evaluator.html">evaluator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">raw_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="id_3-inspect-one-method">3. Inspect One Method<a class="anchor" aria-label="anchor" href="#id_3-inspect-one-method"></a>
+</h3>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">mean_mode</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="id_4-compare-all-methods">4. Compare All Methods<a class="anchor" aria-label="anchor" href="#id_4-compare-all-methods"></a>
+</h3>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/print_metrics.html">print_metrics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="id_5-suggest-the-best-method">5. Suggest the Best Method<a class="anchor" aria-label="anchor" href="#id_5-suggest-the-best-method"></a>
 </h3>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Tabular comparison</span></span>
-<span><span class="fu"><a href="reference/print_metrics.html">print_metrics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output (knitr_kable preview):</em></p>
-<pre><code>
-| Method      |      RMSE |      MAE |      R2 | Correlation |     KS | Accuracy |
-|:------------|----------:|---------:|--------:|------------:|-------:|---------:|
-| Mean/Mode   |  7556.136 | 6543.196 | -1.2422 |          NA | 0.6860 |   0.0992 |
-| Median/Mode |  7563.103 | 6551.639 | -1.2424 |          NA | 0.6827 |   0.1033 |
-| MICE        | 10920.341 | 9001.991 | -1.5667 |     -0.0465 | 0.2071 |   0.1017 |</code></pre>
-</div>
-<div class="section level3">
-<h3 id="comparison-of-imputation-methods">Comparison of Imputation Methods<a class="anchor" aria-label="anchor" href="#comparison-of-imputation-methods"></a>
-</h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot a single metric (RMSE across methods)</span></span>
-<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"RMSE"</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output (saved plot):</em> <img src="inst/extdata/figures/plot_rmse.png" alt="RMSE Comparison"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot all metrics in separate panels</span></span>
-<span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output (saved plot):</em> <img src="inst/extdata/figures/plot_all.png" alt="All Metrics Comparison"></p>
-</div>
-<div class="section level3">
-<h3 id="suggest-best-method">Suggest Best Method<a class="anchor" aria-label="anchor" href="#suggest-best-method"></a>
-</h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Suggest best method for a single metric</span></span>
-<span><span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, metric <span class="op">=</span> <span class="st">"RMSE"</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output:</em></p>
-<pre><code>Suggested best imputation method based on RMSE: Mean/Mode
-[1] "Mean/Mode"</code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Suggest best methods across all metrics (grouped summary)</span></span>
-<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, metric <span class="op">=</span> <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
-<p><em>Output:</em></p>
-<pre><code>Suggested best imputation methods across metrics:
-    As per R2, KS, RMSE, MAE metrics: Mean/Mode
-    As per Accuracy metrics: Median/Mode</code></pre>
-<p><em>Return object (list):</em></p>
-<pre><code>$`Mean/Mode`
-[1] "R2"   "KS"   "RMSE" "MAE"
+<code class="sourceCode R"><span><span class="fu"><a href="reference/suggest_best_method.html">suggest_best_method</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
+<p>Example output:</p>
+<pre><code>Numeric Columns:
+     Best imputation method as per "RMSE, MAE, R2, KS" metric: Mean/Mode
+     Best imputation method as per "Correlation" metric: MICE
 
-$`Median/Mode`
-[1] "Accuracy"</code></pre>
+Categorical Columns:
+     Best imputation method as per "Kappa" metric: KNN
+     Best imputation method as per "Accuracy, F1, BalancedAccuracy" metric: Mean/Mode
+     Best imputation method as per "MacroF1" metric: MICE</code></pre>
 <hr>
 </div>
+</div>
+<div class="section level2">
+<h2 id="example-visuals">Example Visuals<a class="anchor" aria-label="anchor" href="#example-visuals"></a>
+</h2>
+<div class="section level3">
+<h3 id="metric-comparison-across-methods">Metric Comparison Across Methods<a class="anchor" aria-label="anchor" href="#metric-comparison-across-methods"></a>
+</h3>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"ALL"</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="docs/plots/example_metrics.png" alt="Comparison of Imputation Methods across All Metrics"><div class="figcaption">Comparison of Imputation Methods across All Metrics</div>
+</div>
+</div>
+<div class="section level3">
+<h3 id="single-metric-eg-rmse">Single Metric (e.g. RMSE)<a class="anchor" aria-label="anchor" href="#single-metric-eg-rmse"></a>
+</h3>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_metrics.html">plot_metrics</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"RMSE"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="density-comparison">Density Comparison<a class="anchor" aria-label="anchor" href="#density-comparison"></a>
+</h3>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">eval_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_eval_list.html">get_eval_list</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_density_per_column.html">plot_density_per_column</a></span><span class="op">(</span><span class="va">eval_list</span>, <span class="st">"age"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_density_all.html">plot_density_all</a></span><span class="op">(</span><span class="va">eval_list</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="docs/plots/example_density.png" alt="True vs Imputed Densities"><div class="figcaption">True vs Imputed Densities</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="evaluation-metrics-summary">Evaluation Metrics Summary<a class="anchor" aria-label="anchor" href="#evaluation-metrics-summary"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="24%">
+<col width="24%">
+<col width="24%">
+<col width="26%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Metric</th>
+<th align="left">Type</th>
+<th align="center">Goal</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>RMSE</strong></td>
+<td align="left">Numeric</td>
+<td align="center">↓</td>
+<td align="left">Root Mean Squared Error</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>MAE</strong></td>
+<td align="left">Numeric</td>
+<td align="center">↓</td>
+<td align="left">Mean Absolute Error</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>R²</strong></td>
+<td align="left">Numeric</td>
+<td align="center">↑</td>
+<td align="left">Variance explained</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Correlation</strong></td>
+<td align="left">Numeric</td>
+<td align="center">↑</td>
+<td align="left">Pearson correlation</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>KS</strong></td>
+<td align="left">Numeric</td>
+<td align="center">↑</td>
+<td align="left">Distribution similarity</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Accuracy</strong></td>
+<td align="left">Categorical</td>
+<td align="center">↑</td>
+<td align="left">Exact match rate</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Kappa</strong></td>
+<td align="left">Categorical</td>
+<td align="center">↑</td>
+<td align="left">Chance-corrected agreement</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>F1 / MacroF1</strong></td>
+<td align="left">Categorical</td>
+<td align="center">↑</td>
+<td align="left">Balance between precision &amp; recall</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>BalancedAccuracy</strong></td>
+<td align="left">Categorical</td>
+<td align="center">↑</td>
+<td align="left">Mean recall per class</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="additional-features">Additional Features<a class="anchor" aria-label="anchor" href="#additional-features"></a>
+</h2>
+<ul>
+<li>
+<strong>Split-metric evaluation:</strong> numeric and categorical metrics handled separately.</li>
+<li>
+<strong>C++ acceleration:</strong> high-performance evaluation with safe NA handling.</li>
+<li>
+<strong>Parallel KNN:</strong> multi-core computation for mixed-type datasets.</li>
+<li>
+<strong>Skewness-aware mean imputation:</strong> applies log + geometric mean for |skewness| &gt; 1.</li>
+<li>
+<strong>Reproducible pipeline:</strong> consistent metrics across runs (<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> used).</li>
+<li>
+<strong>Custom plotting:</strong> side-by-side bar charts, density overlays, and panel comparisons.</li>
+</ul>
+<hr>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <ul>
-<li>Function manuals: <code><a href="reference/evaluator.html">?evaluator</a></code>, <code><a href="reference/plot_metrics.html">?plot_metrics</a></code>, etc.</li>
-<li>Vignettes: under <code>vignettes/</code> (in progress).</li>
-<li>HTML docs: pkgdown site at <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link uri">https://tanveer09.github.io/imputetoolkit/</a>
+<li>Function references: <code><a href="reference/evaluator.html">?evaluator</a></code>, <code><a href="reference/plot_metrics.html">?plot_metrics</a></code>, <code><a href="reference/suggest_best_method.html">?suggest_best_method</a></code>
+</li>
+<li>Vignette tutorial: <code><a href="articles/imputetoolkit.html">vignette("imputetoolkit")</a></code>
+</li>
+<li>Online docs: <a href="https://tanveer09.github.io/imputetoolkit/" class="external-link">pkgdown site</a>
 </li>
 </ul>
 <hr>
@@ -358,21 +514,43 @@ $`Median/Mode`
 <h2 id="development-notes">Development Notes<a class="anchor" aria-label="anchor" href="#development-notes"></a>
 </h2>
 <ul>
-<li>C++ backend (<code>Evaluator</code> class) demonstrates <strong>OOP encapsulation</strong>.</li>
-<li>S3 interface on the R side for consistent <code>print</code>, <code>summary</code>, and plotting.</li>
-<li>Roadmap includes adding <strong>kNN</strong> and <strong>missForest</strong> imputations.</li>
-<li>Current release: <strong>core pipeline stable + tested</strong>.</li>
+<li>Modular design: easy extension for new imputation algorithms (e.g. missForest, EM).</li>
+<li>Full <code>testthat</code> coverage with &gt;50 passing tests.</li>
+<li>Fully vectorized Rcpp implementation.</li>
+<li>Works seamlessly with <code>knitr</code> / <code>rmarkdown</code> for reproducible reports.</li>
 </ul>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="feedback-and-contributions">Feedback and Contributions<a class="anchor" aria-label="anchor" href="#feedback-and-contributions"></a>
+</h2>
+<p>Feedback, feature requests, or bug reports are welcome via the <a href="https://github.com/tanveer09/imputetoolkit/issues" class="external-link">Issues page</a>.</p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>This package is released under the <a href="LICENSE">MIT License</a>.</p>
+<p>Released under the <a href="LICENSE">MIT License</a>.</p>
 <hr>
 </div>
+<div class="section level2">
+<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
+<blockquote>
+<p>Singh, Tanveer. (2025). <em>imputetoolkit: An R Package for Evaluating Missing Data Imputation Methods.</em> Victoria University of Wellington.</p>
+</blockquote>
+<hr>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/tanveer09/imputetoolkit/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/tanveer09/imputetoolkit/issues" class="external-link">Report a bug</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
@@ -392,10 +570,20 @@ $`Median/Mode`
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Tanveer Singh <br><small class="roles"> Author, maintainer </small>   </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://github.com/tanveer09/imputetoolkit/blob/main/LICENSE.md" class="external-link"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a></li>
+<li><a href="https://github.com/tanveer09/imputetoolkit" class="external-link"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Docs: pkgdown"></a></li>
+<li><a href="https://github.com/tanveer09/imputetoolkit" class="external-link"><img src="https://img.shields.io/badge/GitHub-imputetoolkit-black?logo=github" alt="GitHub repo"></a></li>
+<li><a href=""><img src="https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg" alt="Made with Rcpp &amp; R"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

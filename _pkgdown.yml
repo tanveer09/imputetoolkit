@@ -1,4 +1,14 @@
 url: ~
 template:
   bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    pkgdown-nav-height: 60px
+    base_font:
+      google: "Inter"
+    heading_font:
+      google: "Inter"
+
+extra_css:
+  - inst/pkgdown/extra.css
 

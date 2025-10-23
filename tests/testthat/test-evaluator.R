@@ -2,7 +2,7 @@ test_that("evaluator runs with all methods on synthetic dataset", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
   expect_true(file.exists(file))
 
-  results <- evaluator(filename = file)
+  results <- evaluator(file)
 
   # ---- Check methods ----
   expect_named(results, c("mean_mode", "median_mode", "mice", "knn"))
@@ -50,25 +50,25 @@ test_that("evaluator runs with all methods on synthetic dataset", {
   best_all <- suggest_best_method(results, "ALL")
   expect_true(is.list(best_all))
   all_metrics <- unlist(c(best_all$numeric, best_all$categorical), use.names = FALSE)
-    expect_true(all(all_metrics %in% c(
-      "RMSE", "MAE", "R2", "Correlation", "KS",
-      "Accuracy", "Kappa", "F1", "MacroF1", "BalancedAccuracy")))
-
+  expect_true(all(all_metrics %in% c(
+    "RMSE", "MAE", "R2", "Correlation", "KS",
+    "Accuracy", "Kappa", "F1", "MacroF1", "BalancedAccuracy"
+  )))
 })
 
 test_that("evaluator fails with invalid inputs", {
-  expect_error(evaluator(), "Please provide either a filename or a data.frame")
-  expect_error(evaluator(filename = "nonexistent.csv"))
+  expect_error(evaluator(), "No input provided")
+  expect_error(evaluator("nonexistent.csv"))
 
   tmp <- tempfile(fileext = ".xyz")
   writeLines("dummy", tmp)
-  expect_error(evaluator(filename = tmp), "Unsupported file type")
+  expect_error(evaluator(tmp), "Unsupported file type")
 })
 
 test_that("evaluator is reproducible with fixed seed", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
-  res1 <- evaluator(filename = file)
-  res2 <- evaluator(filename = file)
+  res1 <- evaluator(file)
+  res2 <- evaluator(file)
   expect_equal(res1$mean_mode$metrics_numeric[[1]], res2$mean_mode$metrics_numeric[[1]])
 })
 
@@ -78,7 +78,7 @@ test_that("extract_metrics validates inputs", {
 
 test_that("suggest_best_method works correctly", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
-  res <- evaluator(filename = file)
+  res <- evaluator(file)
 
   expect_error(suggest_best_method(res, "NOT_A_METRIC"))
 
@@ -95,7 +95,7 @@ test_that("suggest_best_method works correctly", {
 
 test_that("plot_metrics works correctly", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
-  res <- evaluator(filename = file)
+  res <- evaluator(file)
 
   expect_error(plot_metrics(res, "NotARealMetric"), "not found")
 
@@ -125,7 +125,7 @@ test_that("evaluate_imputation works with simple numeric data", {
 
 test_that("print and summary invisibility", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
-  res <- evaluator(filename = file)
+  res <- evaluator(file)
   expect_invisible(print(res$mean_mode))
   s <- summary(res$mean_mode)
   expect_true(is.list(s))
@@ -135,7 +135,7 @@ test_that("print and summary invisibility", {
 # --- Additional edge tests for KNN ---
 test_that("KNN imputation produces reasonable values", {
   file <- system.file("extdata", "sample_dataset.csv", package = "imputetoolkit")
-  res <- evaluator(filename = file)
+  res <- evaluator(file)
   knn_eval <- res$knn
   expect_s3_class(knn_eval, "evaluator")
 

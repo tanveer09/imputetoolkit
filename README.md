@@ -1,8 +1,16 @@
-# imputetoolkit. <img src="man/figures/imputetoolkit_logo.png" width="70" align="right"/>
+# imputetoolkit <a href="https://tanveer09.github.io/imputetoolkit/"><img src="man/figures/imputetoolkit_logo.png" align="right" height="120" width="120" style="margin-top:-5px;"/></a>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![pkgdown site](https://img.shields.io/badge/docs-pkgdown-blue)](https://tanveer09.github.io/imputetoolkit/) [![Made with R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
 
-------------------------------------------------------------------------
+<!-- badges: start -->
+
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/tanveer09/imputetoolkit/blob/main/LICENSE.md)
+[![Docs: pkgdown](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://github.com/tanveer09/imputetoolkit)
+[![GitHub repo](https://img.shields.io/badge/GitHub-imputetoolkit-black?logo=github)](https://github.com/tanveer09/imputetoolkit)
+[![Made with Rcpp & R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
+<!-- badges: end -->
+
+
 
 ## Overview
 
@@ -17,11 +25,11 @@ With parallel computation, C++ acceleration, and an intuitive S3 interface (`pri
 ## Key Features
 
 | Category                      | Description                                                                                                                      |
-|---------------------------------|---------------------------------------|
-| **Imputation Methods**        | Mean/Mode (skewness-aware log transform), Median/Mode, MICE (Predictive Mean Matching), and mixed-type KNN (parallelized)        |
+|----------------------|-------------------------------------------------|
+| **Imputation Methods**        | Mean/Mode (skewness-aware log transform), Median/Mode, MICE, and mixed-type KNN (parallelized)        |
 | **Evaluation Metrics (Rcpp)** | Split into: <br>• *Numeric:* RMSE, MAE, R², Correlation, KS <br>• *Categorical:* Accuracy, Kappa, F1, MacroF1, Balanced Accuracy |
 | **Parallelization**           | Multi-core KNN imputation using `FNN`, `foreach`, and `doParallel`                                                               |
-| **Scaling**                   | Min–max scaling of numeric columns for fair metric comparison                                                                    |
+| **Scaling**                   | Min-max scaling of numeric columns for fair metric comparison                                                                    |
 | **Visualization**             | ggplot2-based metric and density plots (per method or all methods)                                                               |
 | **Recommendation**            | Automatic “best-method” suggestions per metric type                                                                              |
 | **Reproducibility**           | Deterministic pipeline with fixed seeds and consistent outputs                                                                   |
@@ -33,7 +41,8 @@ With parallel computation, C++ acceleration, and an intuitive S3 interface (`pri
 ```         
 
 imputetoolkit/
-├── DESCRIPTION / NAMESPACE
+├── DESCRIPTION
+├── NAMESPACE
 ├── R/
 │   ├── evaluator.R             # main pipeline + S3 interface
 │   ├── plot_metrics.R          # plotting utilities
@@ -121,7 +130,7 @@ All metrics are implemented in C++ using `Rcpp`, ensuring fast and stable perfor
 Comprehensive suite covering:
 
 | Test Area             | Focus                                                    |
-|-------------------------|-----------------------------------------------|
+|------------------------|-----------------------------------------------|
 | **Pipeline**          | Verifies all 4 imputation methods run successfully       |
 | **S3 Methods**        | `print`, `summary`, and invisibility checks              |
 | **Wrapper Functions** | `extract_metrics`, `plot_metrics`, `suggest_best_method` |
@@ -146,7 +155,7 @@ Requires **R ≥ 4.0**, Rtools (Windows), and compilation support for Rcpp.
 
 ``` r
 install.packages("remotes")
-remotes::install_github("tanveer09/imputetoolkit@main", build_vignettes = TRUE)
+remotes::install_github("tanveer09/imputetoolkit@main", build_vignettes = TRUE, INSTALL_opts = c("--install-tests"))
 ```
 
 ### Load the package
@@ -282,6 +291,12 @@ plot_density_all(eval_list)
 -   Full `testthat` coverage with \>50 passing tests.
 -   Fully vectorized Rcpp implementation.
 -   Works seamlessly with `knitr` / `rmarkdown` for reproducible reports.
+
+------------------------------------------------------------------------
+
+## Feedback and Contributions
+
+Feedback, feature requests, or bug reports are welcome via the [Issues page](https://github.com/tanveer09/imputetoolkit/issues).
 
 ------------------------------------------------------------------------
 

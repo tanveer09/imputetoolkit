@@ -1,5 +1,5 @@
 ---
-title: "imputetoolkit"
+title: "imputetoolkit "
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{imputetoolkit}
@@ -33,7 +33,7 @@ library(imputetoolkit)
 
 Handling **missing data** remains one of the most crucial tasks in applied data science. Whether caused by *sensor failures*, *survey non-responses*, or *data-entry mistakes*, missingness can bias analyses and reduce model performance.
 
-Simple techniques like listwise deletion often waste data. More principled strategies use **imputation**—replacing missing values with reasonable estimates.
+Simple techniques like listwise deletion often waste data. More principled strategies use **imputation** replacing missing values with reasonable estimates.
 
 However, **no single method** performs best for all data types or distributions. The **`imputetoolkit`** package provides an **R + C++ unified framework** to **inject**, **impute**, **evaluate**, and **visualize** different imputation strategies side by side.
 
@@ -89,7 +89,7 @@ Internally, this function:
 
 ------------------------------------------------------------------------
 
-# Example 1 – Quick Start
+# Example 1 - Quick Start
 
 ```{r, eval=FALSE}
 # Load the built-in mixed-type dataset
@@ -126,7 +126,7 @@ plot_metrics(res, "ALL")
 
 ------------------------------------------------------------------------
 
-# Example 2 – Split Evaluation: Numeric vs Categorical
+# Example 2 - Split Evaluation: Numeric vs Categorical
 
 Each imputation result now contains two separate metric groups:
 
@@ -153,7 +153,7 @@ Example categorical-metric output:
 
 ------------------------------------------------------------------------
 
-# Example 3 – Suggesting the Best Imputation Method
+# Example 3 - Suggesting the Best Imputation Method
 
 ```{r, eval=FALSE}
 # Single-metric suggestion
@@ -178,23 +178,31 @@ Categorical Columns:
 
 ------------------------------------------------------------------------
 
-# Example 4 – Visual Comparison of Results
+# Example 4 - Visual Comparison of Results
+
+The following visualizations summarize and compare the imputation performance across all methods.
 
 ### Metric-Based Plots
 
 ```{r, eval=FALSE, fig.width=7, fig.height=5}
 plot_metrics(res, metric = "RMSE")            # Numeric
 plot_metrics(res, metric = "Accuracy")        # Categorical
-plot_metrics(res, metric = "ALL")             # Combined panel
 ```
 
-Example output:
+```{r fig-metrics, fig.cap="Comparison of Imputation Methods Across All Evaluation Metrics", fig.align='center', out.width='90%', fig.width=8, fig.height=5, eval=FALSE}
 
-![Comparison of Imputation Methods across All Metrics](example_plot_all.png)
+plot_metrics(res, metric = "ALL")
+```
+
+![](../man/figures/imputation_metrics_comparison.png){width=90%}
+
+*Figure 1.* Comparison of four imputation methods - **KNN**, **Mean/Mode**, **Median/Mode**, and **MICE**, across both numeric and categorical evaluation metrics. Each facet represents a specific metric, with the x-axis showing the imputation methods side by side. This plot enables quick visual comparison and helps identify which method performs best overall.
 
 ------------------------------------------------------------------------
 
-# Example 5 – Distributional Similarity via Density Plots
+# Example 5 - Distributional Similarity via Density Plots
+
+Distribution plots help verify whether imputed values preserve the shape of the original data.
 
 Distribution overlap between **true** and **imputed** values can be visualized:
 
@@ -204,16 +212,17 @@ eval_list <- get_eval_list(res)
 # Single column
 plot_density_per_column(eval_list, "age")
 
-# All columns × methods
+```
+
+```{r fig-metrics-all, fig.cap="Comparison of Imputation Methods Across All Evaluation Metrics",fig.align='center', out.width='110%', fig.width=11, fig.height=6.5, eval=FALSE}
 plot_density_all(eval_list)
 ```
 
-Example:
+![](../man/figures/true_vs_imputed_density.png){width=90%}
 
--   Top panel shows overlap for all numeric variables.
--   Lower panel zooms into one column (e.g. `age`) to inspect shape preservation.
+*Figure 2.* True (blue) and imputed (red) value distributions across all numeric variables and imputation methods.  
+Each column represents a method and each row a variable. Greater overlap between the blue and red curves indicates closer preservation of the original data distribution.
 
-![True vs Imputed Density Comparison](example_density_all.png)
 
 ------------------------------------------------------------------------
 
@@ -221,11 +230,11 @@ Example:
 
 | **Metric**            | **Definition / Purpose**                                 | **Better Value** |
 |:---------------|:---------------------------------------|:--------------:|
-| **RMSE**              | Root Mean Square Error – overall numeric deviation       |        ↓         |
+| **RMSE**              | Root Mean Square Error - overall numeric deviation       |        ↓         |
 | **MAE**               | Mean Absolute Error                                      |        ↓         |
 | **R²**                | Proportion of variance explained                         |        ↑         |
 | **Correlation**       | Pearson correlation between true & imputed values        |        ↑         |
-| **KS**                | Kolmogorov–Smirnov statistic – distributional similarity |        ↑         |
+| **KS**                | Kolmogorov–Smirnov statistic - distributional similarity |        ↑         |
 | **Accuracy**          | Fraction of exact categorical matches                    |        ↑         |
 | **Kappa**             | Chance-adjusted agreement statistic                      |        ↑         |
 | **F1 / Macro F1**     | Harmonic mean of precision & recall / class-balanced F1  |        ↑         |
@@ -233,7 +242,7 @@ Example:
 
 ------------------------------------------------------------------------
 
-# Example 6 – Full Automated Comparison
+# Example 6 - Full Automated Comparison
 
 ```{r, eval=FALSE}
 evaluate_results(res, metric = "ALL")

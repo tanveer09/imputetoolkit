@@ -1,8 +1,8 @@
 Package: imputetoolkit
 Title: Imputation Toolkit for Evaluating Missing Data Methods
-Version: 0.1.0
+Version: 2.1.0
 Authors@R: 
-    person("Tanveer", "Singh", email = "k.tanveer.singh@gmail.com", role = c("aut", "cre"))
+    person("Tanveer", "Singh", email = "k.tanveer.singh@gmail.com", role = c("aut", "cre"), comment = c(GitHub = "tanveer09", URL = "https://github.com/tanveer09"))
 Description: Provides tools for injecting missingness into datasets,
     applying different imputation techniques, and evaluating their
     performance using metrics implemented in Rcpp. Includes a fast,
@@ -36,3 +36,6 @@ Suggests:
 Config/testthat/edition: 3
 BuildVignettes: true
 VignetteBuilder: knitr
+URL: https://github.com/tanveer09/imputetoolkit,
+    https://tanveer09.github.io/imputetoolkit/
+BugReports: https://github.com/tanveer09/imputetoolkit/issues
