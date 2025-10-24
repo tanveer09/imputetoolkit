@@ -1,0 +1,15 @@
+/* Remove the top grey line under the title */
+.page-header {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* Some themes add an <hr> right after the header */
+.page-header + hr {
+  display: none !important;
+}
+
+/* Optional: tweak spacing so layout still looks balanced */
+.page-header {
+  margin-bottom: 25px !important;
+}

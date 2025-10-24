@@ -1,0 +1,11 @@
+/* Expand layout width and improve readability */
+.container, .container-lg, .container-xl {
+  max-width: 1400px !important;
+}
+
+main.container {
+  padding-left: 2rem;
+  padding-right: 2rem;
+  line-height: 1.6;
+  font-size: 1.05rem;
+}

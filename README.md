@@ -1,16 +1,10 @@
 # imputetoolkit <a href="https://tanveer09.github.io/imputetoolkit/"><img src="man/figures/imputetoolkit_logo.png" align="right" height="120" width="120" style="margin-top:-5px;"/></a>
 
-
 <!-- badges: start -->
 
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/tanveer09/imputetoolkit/blob/main/LICENSE.md)
-[![Docs: pkgdown](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://github.com/tanveer09/imputetoolkit)
-[![GitHub repo](https://img.shields.io/badge/GitHub-imputetoolkit-black?logo=github)](https://github.com/tanveer09/imputetoolkit)
-[![Made with Rcpp & R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/tanveer09/imputetoolkit/blob/main/LICENSE.md) [![Docs: pkgdown](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://github.com/tanveer09/imputetoolkit) [![GitHub repo](https://img.shields.io/badge/GitHub-imputetoolkit-black?logo=github)](https://github.com/tanveer09/imputetoolkit) [![Made with Rcpp & R](https://img.shields.io/badge/Made%20with-Rcpp%20%26%20R-blue.svg)]()
+
 <!-- badges: end -->
-
-
 
 ## Overview
 
@@ -25,8 +19,8 @@ With parallel computation, C++ acceleration, and an intuitive S3 interface (`pri
 ## Key Features
 
 | Category                      | Description                                                                                                                      |
-|----------------------|-------------------------------------------------|
-| **Imputation Methods**        | Mean/Mode (skewness-aware log transform), Median/Mode, MICE, and mixed-type KNN (parallelized)        |
+|-----------------------|------------------------------------------------|
+| **Imputation Methods**        | Mean/Mode (skewness-aware log transform), Median/Mode, MICE, and mixed-type KNN (parallelized)                                   |
 | **Evaluation Metrics (Rcpp)** | Split into: <br>• *Numeric:* RMSE, MAE, R², Correlation, KS <br>• *Categorical:* Accuracy, Kappa, F1, MacroF1, Balanced Accuracy |
 | **Parallelization**           | Multi-core KNN imputation using `FNN`, `foreach`, and `doParallel`                                                               |
 | **Scaling**                   | Min-max scaling of numeric columns for fair metric comparison                                                                    |
@@ -130,7 +124,7 @@ All metrics are implemented in C++ using `Rcpp`, ensuring fast and stable perfor
 Comprehensive suite covering:
 
 | Test Area             | Focus                                                    |
-|------------------------|-----------------------------------------------|
+|-------------------------|----------------------------------------------|
 | **Pipeline**          | Verifies all 4 imputation methods run successfully       |
 | **S3 Methods**        | `print`, `summary`, and invisibility checks              |
 | **Wrapper Functions** | `extract_metrics`, `plot_metrics`, `suggest_best_method` |
