@@ -27,10 +27,6 @@ man/*.pdf
 coverage.*
 covr/
 
-# pkgdown website
-docs/
-pkgdown/
-
 # Temporary files
 *.o
 *.so
