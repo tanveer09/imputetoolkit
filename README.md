@@ -355,7 +355,7 @@ install.packages("remotes")
 
 ``` r
 remotes::install_github(
-  "tanveer09/imputetoolkit@draft",
+  "tanveer09/imputetoolkit",
   build_vignettes = TRUE,
   INSTALL_opts = c("--install-tests")
 )
